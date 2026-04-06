@@ -33,11 +33,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const { name } = await req.json();
+  const { name, description } = await req.json();
 
   const { data, error } = await supabase
     .from("departments")
-    .insert({ name })
+    .insert({ name, description: description || null })
     .select()
     .single();
 

@@ -1,13 +1,8 @@
-import { CalendarDays, Plus, MapPin, Clock, Users } from "lucide-react";
-
-const EVENTS = [
-  { title: "Annual Company Meeting", date: "Apr 15, 2025", time: "10:00 AM", location: "Main Conference Hall", attendees: 120, type: "Company", color: "from-violet-500 to-purple-600" },
-  { title: "Q2 Performance Review", date: "Apr 20, 2025", time: "2:00 PM", location: "HR Office", attendees: 45, type: "HR", color: "from-blue-500 to-cyan-600" },
-  { title: "Team Building Workshop", date: "May 03, 2025", time: "9:00 AM", location: "Training Center", attendees: 60, type: "Training", color: "from-emerald-400 to-teal-600" },
-  { title: "New Employee Orientation", date: "May 10, 2025", time: "11:00 AM", location: "Board Room", attendees: 15, type: "Onboarding", color: "from-amber-400 to-orange-500" },
-  { title: "Leadership Summit", date: "May 22, 2025", time: "9:00 AM", location: "Executive Suite", attendees: 30, type: "Company", color: "from-pink-500 to-rose-600" },
-  { title: "Health & Wellness Day", date: "Jun 05, 2025", time: "8:00 AM", location: "Company Grounds", attendees: 200, type: "Wellness", color: "from-indigo-500 to-blue-600" },
-];
+import { CalendarDays, MapPin, Clock, Users } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { getSession } from "@/lib/session";
+import { AddEventButton } from "@/components/shared/AddEventButton";
+import { DeleteEventButton } from "@/components/shared/DeleteEventButton";
 
 const typeColor: Record<string, string> = {
   Company:    "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400",
@@ -17,7 +12,25 @@ const typeColor: Record<string, string> = {
   Wellness:   "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-400",
 };
 
-export default function EventsPage() {
+const typeGradient: Record<string, string> = {
+  Company:    "from-violet-500 to-purple-600",
+  HR:         "from-blue-500 to-cyan-600",
+  Training:   "from-emerald-400 to-teal-600",
+  Onboarding: "from-amber-400 to-orange-500",
+  Wellness:   "from-indigo-500 to-blue-600",
+};
+
+export default async function EventsPage() {
+  const session = await getSession();
+  const isAdmin = session && ["admin", "hr"].includes(session.role);
+
+  const { data: events } = await supabase
+    .from("events")
+    .select("*")
+    .order("date", { ascending: true });
+
+  const list = events ?? [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -25,47 +38,71 @@ export default function EventsPage() {
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Events</h2>
           <p className="text-slate-500 dark:text-slate-400 mt-0.5">Upcoming company events and activities</p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition-all hover:shadow-md">
-          <Plus className="w-4 h-4" />
-          Add Event
-        </button>
+        {isAdmin && <AddEventButton />}
       </div>
 
+      {list.length === 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-12 text-center text-sm text-slate-400 dark:text-slate-500">
+          No events found.
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {EVENTS.map((event, i) => (
-          <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-            <div className={`h-2 bg-gradient-to-r ${event.color}`} />
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${typeColor[event.type] ?? "bg-slate-100 text-slate-600"}`}>
-                  {event.type}
-                </span>
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${event.color} flex items-center justify-center shadow-sm`}>
-                  <CalendarDays className="w-5 h-5 text-white" />
+        {list.map((event) => {
+          const color = typeGradient[event.type] ?? "from-pink-500 to-rose-600";
+          const dateObj = new Date(event.date + "T00:00:00");
+          const formatted = dateObj.toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          });
+          return (
+            <div key={event.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+              <div className={`h-2 bg-gradient-to-r ${color}`} />
+              <div className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${typeColor[event.type] ?? "bg-slate-100 text-slate-600"}`}>
+                    {event.type}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {isAdmin && <DeleteEventButton id={event.id} />}
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-sm`}>
+                      <CalendarDays className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base mb-3">{event.title}</h3>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <CalendarDays className="w-4 h-4 shrink-0" />
-                  <span>{event.date}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <Clock className="w-4 h-4 shrink-0" />
-                  <span>{event.time}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <MapPin className="w-4 h-4 shrink-0" />
-                  <span>{event.location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <Users className="w-4 h-4 shrink-0" />
-                  <span>{event.attendees} attendees</span>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base mb-3">{event.title}</h3>
+                {event.description && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{event.description}</p>
+                )}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <CalendarDays className="w-4 h-4 shrink-0" />
+                    <span>{formatted}</span>
+                  </div>
+                  {event.time && (
+                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <Clock className="w-4 h-4 shrink-0" />
+                      <span>{event.time}</span>
+                    </div>
+                  )}
+                  {event.location && (
+                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <MapPin className="w-4 h-4 shrink-0" />
+                      <span>{event.location}</span>
+                    </div>
+                  )}
+                  {event.attendees != null && (
+                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <Users className="w-4 h-4 shrink-0" />
+                      <span>{event.attendees} attendees</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

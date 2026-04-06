@@ -27,7 +27,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data, error } = await supabase
     .from("departments")
-    .update({ name: body.name })
+    .update({ name: body.name, description: body.description || null })
     .eq("id", id)
     .select()
     .single();

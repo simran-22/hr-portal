@@ -23,10 +23,10 @@ async function getReportData() {
 }
 
 const REPORT_CARDS = [
-  { title: "Employee Report", desc: "Full employee directory with status and department breakdown", icon: Users, gradient: "from-violet-500 to-purple-600" },
-  { title: "Leave Report", desc: "Leave requests, approvals and balance summary", icon: CalendarOff, gradient: "from-amber-400 to-orange-500" },
-  { title: "Payroll Report", desc: "Monthly salary disbursement and deduction report", icon: DollarSign, gradient: "from-emerald-400 to-teal-600" },
-  { title: "Recruitment Report", desc: "Job postings, candidate pipeline and hiring funnel", icon: Briefcase, gradient: "from-blue-500 to-cyan-600" },
+  { title: "Employee Report", desc: "Full employee directory with status and department breakdown", icon: Users, gradient: "from-violet-500 to-purple-600", type: "employees" },
+  { title: "Leave Report", desc: "Leave requests, approvals and balance summary", icon: CalendarOff, gradient: "from-amber-400 to-orange-500", type: "leaves" },
+  { title: "Payroll Report", desc: "Monthly salary disbursement and deduction report", icon: DollarSign, gradient: "from-emerald-400 to-teal-600", type: "payroll" },
+  { title: "Recruitment Report", desc: "Job postings, candidate pipeline and hiring funnel", icon: Briefcase, gradient: "from-blue-500 to-cyan-600", type: "recruitment" },
 ];
 
 export default async function ReportsPage() {
@@ -69,10 +69,10 @@ export default async function ReportsPage() {
             <div className="flex-1">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100">{r.title}</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{r.desc}</p>
-              <button className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 px-3 py-1.5 rounded-lg transition-colors">
+              <a href={`/api/reports/export?type=${r.type}`} className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 px-3 py-1.5 rounded-lg transition-colors">
                 <Download className="w-3.5 h-3.5" />
                 Download CSV
-              </button>
+              </a>
             </div>
           </div>
         ))}

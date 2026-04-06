@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data: employee, error } = await supabase
     .from("employees")
     .select(
-      "*, departments(*), leave_balances(*), payroll(*, created_at), leaves(*, created_at)"
+      "*, departments(id, name)"
     )
     .eq("id", id)
     .single();
@@ -35,10 +35,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       position: body.position,
       department_id: body.departmentId || null,
       salary: body.salary ? Number(body.salary) : undefined,
-      employment_type: body.employmentType,
       status: body.status,
-      bio: body.bio,
-      address: body.address,
     })
     .eq("id", id)
     .select("*, departments(id, name)")

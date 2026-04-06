@@ -5,7 +5,8 @@ import { useState } from "react";
 import {
   Building2, LayoutDashboard, Users, CalendarCheck, CalendarOff,
   DollarSign, TrendingUp, Briefcase, Settings, ChevronLeft, ChevronRight,
-  LogOut, CalendarDays, PartyPopper, BarChart3, Wallet, FolderOpen,
+  LogOut, CalendarDays, PartyPopper, BarChart3, FolderOpen, GitBranch,
+  UserPlus, UserMinus, Banknote, Gift, Megaphone,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
@@ -14,16 +15,25 @@ const navGroups = [
   {
     label: "HRMS",
     items: [
-      { label: "Dashboard",   href: "/dashboard",   icon: LayoutDashboard },
-      { label: "Employees",   href: "/employees",   icon: Users },
-      { label: "Departments", href: "/departments", icon: Building2 },
-      { label: "Attendance",  href: "/attendance",  icon: CalendarCheck },
-      { label: "Leaves",      href: "/leaves",      icon: CalendarOff },
-      { label: "Holidays",    href: "/holidays",    icon: CalendarDays },
-      { label: "Events",      href: "/events",      icon: PartyPopper },
-      { label: "Payroll",     href: "/payroll",     icon: DollarSign },
-      { label: "Accounts",    href: "/accounts",    icon: Wallet },
-      { label: "Reports",     href: "/reports",     icon: BarChart3 },
+      { label: "Dashboard",    href: "/dashboard",    icon: LayoutDashboard },
+      { label: "Employees",    href: "/employees",    icon: Users },
+      { label: "Departments",  href: "/departments",  icon: Building2 },
+      { label: "Org Chart",    href: "/org-chart",    icon: GitBranch },
+      { label: "Attendance",   href: "/attendance",   icon: CalendarCheck },
+      { label: "Leaves",       href: "/leaves",       icon: CalendarOff },
+      { label: "Holidays",     href: "/holidays",     icon: CalendarDays },
+      { label: "Events",       href: "/events",       icon: PartyPopper },
+      { label: "Onboarding",   href: "/onboarding",   icon: UserPlus },
+      { label: "Offboarding",  href: "/offboarding",  icon: UserMinus },
+      { label: "Announcements",href: "/announcements", icon: Megaphone },
+    ],
+  },
+  {
+    label: "FINANCE",
+    items: [
+      { label: "Payroll",      href: "/payroll",      icon: DollarSign },
+      { label: "Salary",       href: "/salary",       icon: Banknote },
+      { label: "Incentives",   href: "/incentives",   icon: Gift },
     ],
   },
   {
@@ -36,8 +46,9 @@ const navGroups = [
   {
     label: "SYSTEM",
     items: [
-      { label: "Settings", href: "/settings", icon: Settings },
-      { label: "Documents", href: "/documents", icon: FolderOpen },
+      { label: "Reports",     href: "/reports",      icon: BarChart3 },
+      { label: "Documents",   href: "/documents",    icon: FolderOpen },
+      { label: "Settings",    href: "/settings",     icon: Settings },
     ],
   },
 ];

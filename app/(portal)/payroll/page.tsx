@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { DollarSign, CheckCircle, FileText, TrendingUp } from "lucide-react";
+import { GeneratePayrollButton } from "@/components/shared/GeneratePayrollButton";
+import { getSession } from "@/lib/session";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -49,6 +51,9 @@ export default async function PayrollPage({
   const month = parseInt(sp.month ?? String(now.getMonth() + 1));
   const year = parseInt(sp.year ?? String(now.getFullYear()));
 
+  const session = await getSession();
+  const canManage = session && ["admin", "hr"].includes(session.role);
+
   const { payrolls, stats } = await getPayroll(month, year);
 
   const statCards = [
@@ -87,6 +92,7 @@ export default async function PayrollPage({
             {MONTHS[month - 1]} {year} — {stats.total} record{stats.total !== 1 ? "s" : ""}
           </p>
         </div>
+        {canManage && <GeneratePayrollButton />}
       </div>
 
       {/* Stat Cards */}

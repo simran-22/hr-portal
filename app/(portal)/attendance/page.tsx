@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import { UserCheck, UserX, Clock, CalendarOff, ClipboardList } from "lucide-react";
+import { UserCheck, UserX, CalendarOff, ClipboardList } from "lucide-react";
+import { AttendanceActions } from "@/components/shared/AttendanceActions";
 
 async function getTodayAttendance() {
   const today = new Date().toISOString().split("T")[0];
@@ -98,10 +99,7 @@ export default async function AttendancePage() {
           <h2 className="text-2xl font-bold text-slate-800">Attendance</h2>
           <p className="text-slate-500 mt-0.5">{formatDateLong(today)}</p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition-all hover:shadow-md">
-          <Clock className="w-4 h-4" />
-          Mark Attendance
-        </button>
+        <AttendanceActions />
       </div>
 
       {/* Stat Cards */}

@@ -1,11 +1,12 @@
 import { supabase } from "@/lib/supabase";
+import { getSession } from "@/lib/session";
 import { Users, Plus, Eye } from "lucide-react";
 import { EmployeeFilters } from "@/components/shared/EmployeeFilters";
 
 async function getEmployees(search?: string, status?: string, department?: string) {
   let query = supabase
     .from("employees")
-    .select("id, name, employee_id, position, status, employment_type, join_date, departments(name), profiles(role)")
+    .select("id, name, email, position, status, hire_date, departments(name)")
     .order("name");
 
   if (search) query = query.ilike("name", `%${search}%`);
@@ -35,19 +36,6 @@ const statusBadge = (status: string) => {
   );
 };
 
-const typeBadge = (type: string) => {
-  const map: Record<string, string> = {
-    full_time: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400",
-    part_time: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400",
-    contract: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400",
-    intern: "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-400",
-  };
-  return (
-    <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${map[type] ?? "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"}`}>
-      {type?.replace(/_/g, " ")}
-    </span>
-  );
-};
 
 function getInitials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -68,6 +56,8 @@ export default async function EmployeesPage({
   searchParams: Promise<{ search?: string; status?: string; department?: string }>;
 }) {
   const sp = await searchParams;
+  const session = await getSession();
+  const canManage = session && ["admin", "hr"].includes(session.role);
   const { employees } = await getEmployees(sp.search, sp.status, sp.department);
   const departments = await getDepartments();
 
@@ -89,13 +79,15 @@ export default async function EmployeesPage({
             {employees.length} total employee{employees.length !== 1 ? "s" : ""} across all departments
           </p>
         </div>
-        <a
-          href="/employees/new"
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition-all hover:shadow-md"
-        >
-          <Plus className="w-4 h-4" />
-          Add Employee
-        </a>
+        {canManage && (
+          <a
+            href="/employees/new"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition-all hover:shadow-md"
+          >
+            <Plus className="w-4 h-4" />
+            Add Employee
+          </a>
+        )}
       </div>
 
       {/* Status Pills */}
@@ -156,11 +148,10 @@ export default async function EmployeesPage({
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Employee</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ID</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Department</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Position</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -172,16 +163,11 @@ export default async function EmployeesPage({
                         <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${GRADIENT_COLORS[idx % GRADIENT_COLORS.length]} flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm`}>
                           {getInitials(emp.name ?? "?")}
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{emp.name}</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">{emp.profiles?.role ?? "employee"}</p>
-                        </div>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{emp.name}</p>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
-                      <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md">
-                        {emp.employee_id ?? "—"}
-                      </span>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {emp.email ?? <span className="text-slate-300 dark:text-slate-600">—</span>}
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
                       {emp.departments?.name ?? <span className="text-slate-300 dark:text-slate-600">—</span>}
@@ -190,7 +176,6 @@ export default async function EmployeesPage({
                       {emp.position ?? <span className="text-slate-300 dark:text-slate-600">—</span>}
                     </td>
                     <td className="px-5 py-4">{statusBadge(emp.status)}</td>
-                    <td className="px-5 py-4">{typeBadge(emp.employment_type)}</td>
                     <td className="px-5 py-4">
                       <a
                         href={`/employees/${emp.id}`}

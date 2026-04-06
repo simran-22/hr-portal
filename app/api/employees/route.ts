@@ -40,35 +40,21 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { name, email, phone, position, departmentId, salary, employmentType, status } = body;
 
-  const { count } = await supabase
-    .from("employees")
-    .select("*", { count: "exact", head: true });
-
-  const employeeId = `EMP${String((count ?? 0) + 1).padStart(3, "0")}`;
-
   const { data, error } = await supabase
     .from("employees")
     .insert({
-      employee_id: employeeId,
       name,
       email,
       phone,
       position,
       department_id: departmentId || null,
       salary: Number(salary) || 0,
-      employment_type: employmentType,
       status,
     })
     .select("*, departments(id, name)")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-  // Create default leave balance
-  await supabase.from("leave_balances").insert({
-    employee_id: data.id,
-    year: new Date().getFullYear(),
-  });
 
   return NextResponse.json(data, { status: 201 });
 }

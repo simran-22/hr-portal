@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { Briefcase, MapPin, Users, Calendar, Plus } from "lucide-react";
+import { AddJobButton } from "@/components/shared/AddJobButton";
+import { AddCandidateButton } from "@/components/shared/AddCandidateButton";
+import { getSession } from "@/lib/session";
 
 async function getRecruitmentData() {
   const [{ data: jobs }, { data: candidates }] = await Promise.all([
@@ -73,6 +76,9 @@ const JOB_GRADIENT_COLORS = [
 ];
 
 export default async function RecruitmentPage() {
+  const session = await getSession();
+  const canManage = session && ["admin", "hr", "recruiter"].includes(session.role);
+
   const { jobs, candidates } = await getRecruitmentData();
 
   const openJobs = jobs.filter((j: any) => j.status === "open").length;
@@ -88,10 +94,7 @@ export default async function RecruitmentPage() {
             {openJobs} open position{openJobs !== 1 ? "s" : ""} · {jobs.length} total job{jobs.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition-all hover:shadow-md">
-          <Plus className="w-4 h-4" />
-          Post Job
-        </button>
+{canManage && <AddJobButton />}
       </div>
 
       {/* Job Cards Grid */}
@@ -160,6 +163,7 @@ export default async function RecruitmentPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
           <h3 className="font-semibold text-slate-800">Recent Candidates</h3>
+          {canManage && <AddCandidateButton />}
           <span className="text-xs text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full">
             {totalCandidates} recent
           </span>

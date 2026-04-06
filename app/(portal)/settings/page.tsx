@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { User, Shield, Building2, Mail, Phone, Calendar, Lock, ChevronRight } from "lucide-react";
+import { ProfileEditForm } from "@/components/shared/ProfileEditForm";
+import { ChangePasswordForm } from "@/components/shared/ChangePasswordForm";
 
 async function getProfileData(userId: string) {
   const { data: profile } = await supabase
@@ -170,6 +172,7 @@ export default async function SettingsPage() {
               </>
             )}
           </div>
+          <ProfileEditForm name={session.name} phone={employee?.phone ?? ""} />
         </div>
       </div>
 
@@ -183,14 +186,11 @@ export default async function SettingsPage() {
             <h4 className="font-semibold text-slate-800">Security</h4>
           </div>
         </div>
-        <div className="divide-y divide-slate-50">
+        <div className="divide-y divide-slate-50 dark:divide-slate-800">
+          <div className="px-6 py-4">
+            <ChangePasswordForm />
+          </div>
           {[
-            {
-              icon: Lock,
-              title: "Change Password",
-              description: "Update your password to keep your account secure",
-              badge: null,
-            },
             {
               icon: Shield,
               title: "Two-Factor Authentication",
@@ -206,23 +206,18 @@ export default async function SettingsPage() {
           ].map(({ icon: Icon, title, description, badge }) => (
             <div
               key={title}
-              className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/70 transition-colors group cursor-pointer"
+              className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
-                  <Icon className="w-4 h-4 text-slate-500 group-hover:text-blue-600 transition-colors" />
+                <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800">{title}</p>
-                  <p className="text-xs text-slate-500">{description}</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{title}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                {badge && (
-                  <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{badge}</span>
-                )}
-                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
-              </div>
+              <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">{badge}</span>
             </div>
           ))}
         </div>

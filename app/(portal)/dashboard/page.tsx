@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
-import { Users, CalendarOff, Briefcase, DollarSign, TrendingUp, UserCheck, Clock, Target } from "lucide-react";
+import { Users, CalendarOff, Briefcase, DollarSign, TrendingUp, UserCheck, Clock, Target, Megaphone } from "lucide-react";
 import { DashboardCharts } from "@/components/shared/DashboardCharts";
 
 async function getDashboardData() {
@@ -32,9 +32,16 @@ async function getDashboardData() {
     fill: ["#6366f1","#10b981","#f59e0b","#ef4444","#8b5cf6","#06b6d4"][i % 6],
   }));
 
+  const { data: recentAnnouncements } = await supabase
+    .from("announcements")
+    .select("id, title, content, scope, published_at, expires_at, departments(name)")
+    .or("expires_at.is.null,expires_at.gt." + new Date().toISOString())
+    .order("published_at", { ascending: false })
+    .limit(5);
+
   return { totalEmployees: totalEmployees ?? 0, activeEmployees: activeEmployees ?? 0, onLeave: onLeave ?? 0,
     pendingLeaves: pendingLeaves ?? 0, openJobs: openJobs ?? 0, pendingAppraisals: pendingAppraisals ?? 0,
-    recentLeaves: recentLeaves ?? [], deptChartData, monthlyPayroll };
+    recentLeaves: recentLeaves ?? [], deptChartData, monthlyPayroll, recentAnnouncements: recentAnnouncements ?? [] };
 }
 
 const statCards = (d: Awaited<ReturnType<typeof getDashboardData>>) => [
@@ -139,6 +146,42 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Recent Announcements */}
+      {d.recentAnnouncements.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+            <Megaphone className="w-4 h-4 text-violet-500" />
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100">Recent Announcements</h3>
+          </div>
+          <div className="divide-y divide-slate-50 dark:divide-slate-800">
+            {d.recentAnnouncements.map((a: any) => (
+              <div key={a.id} className="px-5 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h4 className="font-medium text-slate-800 dark:text-slate-100 truncate">{a.title}</h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{a.content}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs text-slate-400 dark:text-slate-500">
+                        {new Date(a.published_at).toLocaleDateString()}
+                      </span>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          a.scope === "company"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                        }`}
+                      >
+                        {a.scope === "company" ? "Company" : a.departments?.name ?? "Department"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

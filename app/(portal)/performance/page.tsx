@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { Target, Star, TrendingUp, CheckCircle } from "lucide-react";
+import { AddGoalButton } from "@/components/shared/AddGoalButton";
+import { AddAppraisalButton } from "@/components/shared/AddAppraisalButton";
+import { getSession } from "@/lib/session";
 
 async function getPerformanceData() {
   const [{ data: goals }, { data: appraisals }] = await Promise.all([
@@ -66,6 +69,9 @@ export default async function PerformancePage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  const session = await getSession();
+  const canManage = session && ["admin", "hr", "manager"].includes(session.role);
+
   const sp = await searchParams;
   const tab = sp.tab ?? "goals";
   const { goals, appraisals } = await getPerformanceData();
@@ -92,9 +98,15 @@ export default async function PerformancePage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Performance</h2>
-        <p className="text-slate-500 mt-0.5">Track goals, progress, and appraisals across your team</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Performance</h2>
+          <p className="text-slate-500 mt-0.5">Track goals, progress, and appraisals across your team</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {canManage && tab === "goals" && <AddGoalButton />}
+          {canManage && tab === "appraisals" && <AddAppraisalButton />}
+        </div>
       </div>
 
       {/* Stat Cards */}

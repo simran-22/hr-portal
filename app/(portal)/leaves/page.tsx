@@ -1,6 +1,9 @@
 import { supabase } from "@/lib/supabase";
+import { getSession } from "@/lib/session";
 import { updateLeaveStatus } from "@/lib/actions/leaves";
 import { CalendarDays, CheckCircle, XCircle, Clock, ListFilter } from "lucide-react";
+import { LeaveRequestButton } from "@/components/shared/LeaveRequestButton";
+import { LeaveBalanceCard } from "@/components/shared/LeaveBalanceCard";
 
 async function getLeaves(status?: string) {
   let query = supabase
@@ -53,6 +56,8 @@ export default async function LeavesPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const sp = await searchParams;
+  const session = await getSession();
+  const canManage = session && ["admin", "hr"].includes(session.role);
   const { leaves, stats } = await getLeaves(sp.status);
 
   const statCards = [
@@ -70,7 +75,11 @@ export default async function LeavesPage({
           <h2 className="text-2xl font-bold text-slate-800">Leave Management</h2>
           <p className="text-slate-500 mt-0.5">Review and manage employee leave requests</p>
         </div>
+        <LeaveRequestButton />
       </div>
+
+      {/* Leave Balance */}
+      <LeaveBalanceCard />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -167,7 +176,7 @@ export default async function LeavesPage({
                     </td>
                     <td className="px-5 py-4">{statusBadge(leave.status)}</td>
                     <td className="px-5 py-4">
-                      {leave.status === "pending" && (
+                      {leave.status === "pending" && canManage && (
                         <div className="flex items-center gap-2">
                           <form
                             action={async () => {
