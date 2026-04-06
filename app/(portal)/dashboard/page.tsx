@@ -38,15 +38,17 @@ async function getDashboardData() {
 }
 
 const statCards = (d: Awaited<ReturnType<typeof getDashboardData>>) => [
-  { label: "Total Employees", value: d.totalEmployees, sub: `${d.activeEmployees} active`, icon: Users, gradient: "from-violet-500 to-purple-600", bg: "bg-violet-50", text: "text-violet-600" },
-  { label: "On Leave", value: d.onLeave, sub: `${d.pendingLeaves} pending`, icon: CalendarOff, gradient: "from-amber-400 to-orange-500", bg: "bg-amber-50", text: "text-amber-600" },
-  { label: "Open Positions", value: d.openJobs, sub: "Active postings", icon: Briefcase, gradient: "from-blue-500 to-cyan-600", bg: "bg-blue-50", text: "text-blue-600" },
-  { label: "Monthly Payroll", value: `$${d.monthlyPayroll.toLocaleString()}`, sub: "This month", icon: DollarSign, gradient: "from-emerald-400 to-teal-600", bg: "bg-emerald-50", text: "text-emerald-600" },
+  { label: "Total Employees", value: d.totalEmployees, sub: `${d.activeEmployees} active`, icon: Users, gradient: "from-violet-500 to-purple-600", bg: "bg-violet-50 dark:bg-violet-500/10", text: "text-violet-600 dark:text-violet-400" },
+  { label: "On Leave", value: d.onLeave, sub: `${d.pendingLeaves} pending`, icon: CalendarOff, gradient: "from-amber-400 to-orange-500", bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400" },
+  { label: "Open Positions", value: d.openJobs, sub: "Active postings", icon: Briefcase, gradient: "from-blue-500 to-cyan-600", bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400" },
+  { label: "Monthly Payroll", value: `$${d.monthlyPayroll.toLocaleString()}`, sub: "This month", icon: DollarSign, gradient: "from-emerald-400 to-teal-600", bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400" },
 ];
 
 const statusColors: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-700", approved: "bg-emerald-100 text-emerald-700",
-  rejected: "bg-red-100 text-red-700", cancelled: "bg-slate-100 text-slate-600",
+  pending: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
+  approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400",
+  rejected: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
+  cancelled: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400",
 };
 
 export default async function DashboardPage() {
@@ -58,23 +60,23 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-800">
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
           Good morning, {session?.name?.split(" ")[0]} 👋
         </h2>
-        <p className="text-slate-500 mt-0.5">Here&apos;s what&apos;s happening in your company today.</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-0.5">Here&apos;s what&apos;s happening in your company today.</p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         {cards.map(({ label, value, sub, icon: Icon, gradient, bg, text }) => (
-          <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-start gap-4 hover:shadow-md transition-shadow">
+          <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex items-start gap-4 hover:shadow-md transition-shadow">
             <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg shrink-0`}>
               <Icon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className="text-slate-500 text-sm">{label}</p>
-              <p className="text-2xl font-bold text-slate-800 mt-0.5">{value}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{label}</p>
+              <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{value}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{sub}</p>
             </div>
           </div>
         ))}
@@ -86,11 +88,11 @@ export default async function DashboardPage() {
       {/* Recent + Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Recent Leaves */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Recent Leave Requests</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100">Recent Leave Requests</h3>
           </div>
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-slate-50 dark:divide-slate-800">
             {d.recentLeaves.length === 0 ? (
               <p className="text-slate-400 text-sm px-5 py-6 text-center">No recent leave requests</p>
             ) : d.recentLeaves.map((l: any) => (
@@ -100,8 +102,8 @@ export default async function DashboardPage() {
                     {l.employees?.name?.charAt(0) ?? "?"}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-700">{l.employees?.name}</p>
-                    <p className="text-xs text-slate-400 capitalize">{l.type?.replace("_", " ")} · {l.from_date}</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{l.employees?.name}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">{l.type?.replace("_", " ")} · {l.from_date}</p>
                   </div>
                 </div>
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${statusColors[l.status] ?? ""}`}>
@@ -113,25 +115,25 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Quick Stats</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100">Quick Stats</h3>
           </div>
           <div className="p-5 space-y-4">
             {[
-              { icon: UserCheck, label: "Active Employees", value: d.activeEmployees, color: "text-emerald-500", bg: "bg-emerald-50" },
-              { icon: Clock, label: "Pending Leave Approvals", value: d.pendingLeaves, color: "text-amber-500", bg: "bg-amber-50" },
-              { icon: Target, label: "Pending Appraisals", value: d.pendingAppraisals, color: "text-purple-500", bg: "bg-purple-50" },
-              { icon: TrendingUp, label: "Open Job Positions", value: d.openJobs, color: "text-blue-500", bg: "bg-blue-50" },
+              { icon: UserCheck, label: "Active Employees", value: d.activeEmployees, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+              { icon: Clock, label: "Pending Leave Approvals", value: d.pendingLeaves, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-500/10" },
+              { icon: Target, label: "Pending Appraisals", value: d.pendingAppraisals, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-500/10" },
+              { icon: TrendingUp, label: "Open Job Positions", value: d.openJobs, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-500/10" },
             ].map(({ icon: Icon, label, value, color, bg }) => (
-              <div key={label} className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+              <div key={label} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center`}>
                     <Icon className={`w-4 h-4 ${color}`} />
                   </div>
-                  <span className="text-sm text-slate-600">{label}</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
                 </div>
-                <span className="font-bold text-slate-800">{value}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-100">{value}</span>
               </div>
             ))}
           </div>

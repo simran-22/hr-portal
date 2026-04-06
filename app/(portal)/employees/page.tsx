@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import { Users, Plus, Search, SlidersHorizontal, Eye } from "lucide-react";
+import { Users, Plus, Eye } from "lucide-react";
+import { EmployeeFilters } from "@/components/shared/EmployeeFilters";
 
 async function getEmployees(search?: string, status?: string, department?: string) {
   let query = supabase
@@ -22,13 +23,13 @@ async function getDepartments() {
 
 const statusBadge = (status: string) => {
   const map: Record<string, string> = {
-    active: "bg-emerald-100 text-emerald-700",
-    on_leave: "bg-amber-100 text-amber-700",
-    terminated: "bg-red-100 text-red-700",
-    probation: "bg-blue-100 text-blue-700",
+    active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400",
+    on_leave: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
+    terminated: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
+    probation: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
   };
   return (
-    <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${map[status] ?? "bg-slate-100 text-slate-600"}`}>
+    <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${map[status] ?? "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"}`}>
       {status?.replace(/_/g, " ")}
     </span>
   );
@@ -36,25 +37,20 @@ const statusBadge = (status: string) => {
 
 const typeBadge = (type: string) => {
   const map: Record<string, string> = {
-    full_time: "bg-violet-100 text-violet-700",
-    part_time: "bg-cyan-100 text-cyan-700",
-    contract: "bg-orange-100 text-orange-700",
-    intern: "bg-pink-100 text-pink-700",
+    full_time: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400",
+    part_time: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400",
+    contract: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400",
+    intern: "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-400",
   };
   return (
-    <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${map[type] ?? "bg-slate-100 text-slate-600"}`}>
+    <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${map[type] ?? "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"}`}>
       {type?.replace(/_/g, " ")}
     </span>
   );
 };
 
 function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
 const GRADIENT_COLORS = [
@@ -88,8 +84,8 @@ export default async function EmployeesPage({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Employees</h2>
-          <p className="text-slate-500 mt-0.5">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Employees</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-0.5">
             {employees.length} total employee{employees.length !== 1 ? "s" : ""} across all departments
           </p>
         </div>
@@ -122,11 +118,11 @@ export default async function EmployeesPage({
               className={`text-xs font-medium px-3 py-1.5 rounded-full transition-all ${
                 isActive
                   ? `bg-gradient-to-r ${colors[s]} text-white shadow-sm`
-                  : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
+                  : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
               }`}
             >
               {s === "all" ? "All" : s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-              <span className={`ml-1.5 ${isActive ? "opacity-80" : "text-slate-400"}`}>
+              <span className={`ml-1.5 ${isActive ? "opacity-80" : "text-slate-400 dark:text-slate-500"}`}>
                 ({statusCounts[s]})
               </span>
             </a>
@@ -136,103 +132,69 @@ export default async function EmployeesPage({
 
       {/* Filters Row */}
       <div className="flex items-center gap-3 flex-wrap">
-        <form className="flex items-center gap-3 flex-1 flex-wrap">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              name="search"
-              defaultValue={sp.search ?? ""}
-              placeholder="Search by name..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
-            />
-            {sp.status && <input type="hidden" name="status" value={sp.status} />}
-            {sp.department && <input type="hidden" name="department" value={sp.department} />}
-          </div>
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-slate-400" />
-            <select
-              name="department"
-              defaultValue={sp.department ?? "all"}
-              className="text-sm bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
-              onChange={(e) => (e.target.form as HTMLFormElement)?.submit()}
-            >
-              <option value="all">All Departments</option>
-              {departments.map((d: any) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
-          </div>
-          <button
-            type="submit"
-            className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl px-4 py-2 text-sm font-medium transition-colors"
-          >
-            Search
-          </button>
-          {(sp.search || sp.department) && (
-            <a href={sp.status ? `/employees?status=${sp.status}` : "/employees"} className="text-sm text-slate-500 hover:text-slate-700">
-              Clear
-            </a>
-          )}
-        </form>
+        <EmployeeFilters
+          departments={departments}
+          search={sp.search}
+          department={sp.department}
+          status={sp.status}
+        />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
         {employees.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
               <Users className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-slate-800 font-semibold text-lg">No employees found</h3>
-            <p className="text-slate-500 text-sm mt-1">Try adjusting your search or filters</p>
+            <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg">No employees found</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50">
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Employee</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Department</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Position</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Type</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Employee</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ID</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Department</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Position</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                 {employees.map((emp: any, idx: number) => (
-                  <tr key={emp.id} className="hover:bg-slate-50/70 transition-colors group">
+                  <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`w-9 h-9 rounded-full bg-gradient-to-br ${GRADIENT_COLORS[idx % GRADIENT_COLORS.length]} flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm`}
-                        >
+                        <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${GRADIENT_COLORS[idx % GRADIENT_COLORS.length]} flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm`}>
                           {getInitials(emp.name ?? "?")}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-slate-800">{emp.name}</p>
-                          <p className="text-xs text-slate-400 capitalize">{emp.profiles?.role ?? "employee"}</p>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{emp.name}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">{emp.profiles?.role ?? "employee"}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md">
                         {emp.employee_id ?? "—"}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-600">
-                      {emp.departments?.name ?? <span className="text-slate-300">—</span>}
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {emp.departments?.name ?? <span className="text-slate-300 dark:text-slate-600">—</span>}
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-600">
-                      {emp.position ?? <span className="text-slate-300">—</span>}
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {emp.position ?? <span className="text-slate-300 dark:text-slate-600">—</span>}
                     </td>
                     <td className="px-5 py-4">{statusBadge(emp.status)}</td>
                     <td className="px-5 py-4">{typeBadge(emp.employment_type)}</td>
                     <td className="px-5 py-4">
                       <a
                         href={`/employees/${emp.id}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100 px-3 py-1.5 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 bg-violet-50 dark:bg-violet-500/10 hover:bg-violet-100 dark:hover:bg-violet-500/20 px-3 py-1.5 rounded-lg transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         View
@@ -246,9 +208,8 @@ export default async function EmployeesPage({
         )}
       </div>
 
-      {/* Footer count */}
       {employees.length > 0 && (
-        <p className="text-sm text-slate-400 text-center">
+        <p className="text-sm text-slate-400 dark:text-slate-500 text-center">
           Showing {employees.length} employee{employees.length !== 1 ? "s" : ""}
           {sp.search ? ` matching "${sp.search}"` : ""}
         </p>

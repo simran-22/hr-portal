@@ -14,11 +14,11 @@ export default async function PortalLayout({ children }: { children: React.React
   if (!session) redirect("/login");
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
       <Sidebar userName={session.name} userRole={session.role} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar title="HR Portal" userName={session.name} />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950">
           {children}
         </main>
       </div>
