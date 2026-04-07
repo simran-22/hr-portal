@@ -23,7 +23,7 @@ export function AddOnboardingButton() {
     if (open) {
       fetch("/api/employees")
         .then((r) => r.json())
-        .then((data) => setEmployees(Array.isArray(data) ? data : []))
+        .then((data) => setEmployees(Array.isArray(data) ? data : data?.employees ?? []))
         .catch(() => setEmployees([]));
     }
   }, [open]);
@@ -109,7 +109,7 @@ export function AddOnboardingButton() {
                   Employee <span className="text-red-500">*</span>
                 </label>
                 <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputClass} required>
-                  <option value="">Select employee</option>
+                  <option value="" disabled>Select employee</option>
                   {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>{emp.name}</option>
                   ))}

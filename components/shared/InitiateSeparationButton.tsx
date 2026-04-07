@@ -22,7 +22,7 @@ export function InitiateSeparationButton() {
     if (open) {
       fetch("/api/employees")
         .then((r) => r.json())
-        .then((data) => setEmployees(Array.isArray(data) ? data : []))
+        .then((data) => setEmployees(Array.isArray(data) ? data : data?.employees ?? []))
         .catch(() => setEmployees([]));
     }
   }, [open]);
