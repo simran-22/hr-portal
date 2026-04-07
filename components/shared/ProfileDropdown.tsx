@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Pencil, Check, Loader2, Mail, Phone, Briefcase, Building2, Calendar, Shield, User } from "lucide-react";
+import { X, Pencil, Check, Loader2, Mail, Phone, Briefcase, Building2, Calendar, Shield, Camera } from "lucide-react";
 
 type ProfileData = {
   id: string;
   name: string;
   email: string;
   role: string;
+  avatar_url: string | null;
   created_at: string;
   employee?: {
     id: string;
@@ -31,6 +32,8 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
   const [editPhone, setEditPhone] = useState("");
   const [editPosition, setEditPosition] = useState("");
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -88,16 +91,38 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
     setSaving(false);
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const res = await fetch("/api/users/avatar", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data.avatar_url) {
+        setProfile((prev) => (prev ? { ...prev, avatar_url: data.avatar_url } : prev));
+      }
+    } catch {}
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const initial = userName.charAt(0).toUpperCase();
+  const avatarUrl = profile?.avatar_url;
 
   return (
     <div className="relative" ref={panelRef}>
       {/* Avatar trigger */}
       <button
         onClick={() => setOpen(!open)}
-        className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
+        className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
       >
-        {initial}
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={userName} className="w-full h-full object-cover" />
+        ) : (
+          initial
+        )}
       </button>
 
       {/* Dropdown panel */}
@@ -111,9 +136,34 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
             >
               <X className="w-4 h-4" />
             </button>
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl font-bold mx-auto mb-2 border-2 border-white/30">
-              {initial}
+
+            {/* Avatar with upload */}
+            <div className="relative inline-block mx-auto mb-2">
+              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl font-bold border-2 border-white/30 overflow-hidden">
+                {uploading ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : avatarUrl ? (
+                  <img src={avatarUrl} alt={userName} className="w-full h-full object-cover" />
+                ) : (
+                  initial
+                )}
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center text-violet-600 hover:bg-violet-50 transition-colors"
+                title="Change photo"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
             </div>
+
             {editing ? (
               <input
                 value={editName}
