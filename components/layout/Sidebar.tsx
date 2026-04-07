@@ -125,7 +125,7 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
         collapsed && "flex justify-center"
       )}>
         {!collapsed && (
-          <div className="flex items-center gap-2 px-2 py-2 mb-1 rounded-xl">
+          <a href="/settings" className="flex items-center gap-2 px-2 py-2 mb-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {userName.charAt(0).toUpperCase()}
             </div>
@@ -133,7 +133,7 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
               <p className="text-xs font-medium truncate text-slate-800 dark:text-white">{userName}</p>
               <p className="text-xs capitalize text-slate-400 dark:text-slate-500">{userRole}</p>
             </div>
-          </div>
+          </a>
         )}
         <form action={logout}>
           <button type="submit"

@@ -2,8 +2,9 @@
 import { Bell, Search, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { ProfileDropdown } from "@/components/shared/ProfileDropdown";
 
-export function Topbar({ title, userName }: { title: string; userName: string }) {
+export function Topbar({ title, userName, userRole }: { title: string; userName: string; userRole: string }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -37,9 +38,7 @@ export function Topbar({ title, userName }: { title: string; userName: string })
           <Bell className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
         </button>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold cursor-pointer">
-          {userName.charAt(0).toUpperCase()}
-        </div>
+        <ProfileDropdown userName={userName} userRole={userRole} />
       </div>
     </header>
   );

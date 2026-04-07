@@ -6,36 +6,58 @@ export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
-    .select("*")
+    .select("id, name, email, role, is_active, created_at")
     .eq("id", session.id)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+
+  // Try to get linked employee details
+  let employee = null;
+  if (session.employeeId) {
+    const { data } = await supabase
+      .from("employees")
+      .select("id, name, email, phone, position, status, hire_date, departments(name)")
+      .eq("id", session.employeeId)
+      .single();
+    employee = data;
+  } else {
+    // Fallback: find employee by email
+    const { data } = await supabase
+      .from("employees")
+      .select("id, name, email, phone, position, status, hire_date, departments(name)")
+      .eq("email", profile.email)
+      .single();
+    employee = data;
+  }
+
+  return NextResponse.json({ ...profile, employee });
 }
 
 export async function PUT(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, phone } = await req.json();
+  const body = await req.json();
+  const { name, phone, position } = body;
 
-  // Update profile name
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({ name })
-    .eq("id", session.id);
+  if (name) {
+    const { error } = await supabase.from("profiles").update({ name }).eq("id", session.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 
-  if (profileError) return NextResponse.json({ error: profileError.message }, { status: 400 });
-
-  // Update employee phone if employee exists
-  if (session.employeeId && phone !== undefined) {
-    await supabase
-      .from("employees")
-      .update({ phone })
-      .eq("id", session.employeeId);
+  // Update employee record if exists
+  const employeeId = session.employeeId;
+  if (employeeId) {
+    const updates: Record<string, string> = {};
+    if (phone !== undefined) updates.phone = phone;
+    if (position !== undefined) updates.position = position;
+    if (name) updates.name = name;
+    if (Object.keys(updates).length > 0) {
+      await supabase.from("employees").update(updates).eq("id", employeeId);
+    }
   }
 
   return NextResponse.json({ success: true });
