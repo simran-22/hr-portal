@@ -29,7 +29,7 @@ export default async function OffboardingPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const canManage = ["admin", "hr"].includes(session.role);
+  const canManage = ["admin"].includes(session.role);
 
   if (!canManage) {
     return (

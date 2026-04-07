@@ -35,7 +35,7 @@ function formatDate(dateStr: string) {
 
 export default async function DocumentsPage() {
   const session = await getSession();
-  const canManage = session && ["admin", "hr"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
   const documents = await getDocuments();
 
   return (

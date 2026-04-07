@@ -12,7 +12,7 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   // Employees can only see their own salary
-  if (!["admin", "hr"].includes(session.role) && session.employeeId) {
+  if (!["admin"].includes(session.role) && session.employeeId) {
     query = query.eq("employee_id", session.employeeId);
   }
 
@@ -24,7 +24,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session || !["admin", "hr"].includes(session.role)) {
+  if (!session || !["admin"].includes(session.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 

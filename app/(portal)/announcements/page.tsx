@@ -23,7 +23,7 @@ function formatDate(d: string) {
 
 export default async function AnnouncementsPage() {
   const session = await getSession();
-  const canManage = session && ["admin", "hr"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
   const announcements = await getAnnouncements();
 
   return (

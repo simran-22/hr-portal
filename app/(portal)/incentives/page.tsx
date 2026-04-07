@@ -33,7 +33,7 @@ const typeLabels: Record<string, string> = {
 
 export default async function IncentivesPage() {
   const session = await getSession();
-  const canManage = session && ["admin", "hr"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
   const incentives = await getIncentives(canManage ? undefined : session?.employeeId);
 
   const totalAmount = incentives.reduce((sum: number, i: any) => sum + (i.amount || 0), 0);

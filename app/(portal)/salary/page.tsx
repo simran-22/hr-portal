@@ -19,7 +19,7 @@ async function getSalaryStructures(employeeId?: string) {
 
 export default async function SalaryPage() {
   const session = await getSession();
-  const canManage = session && ["admin", "hr"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
   const salaries = await getSalaryStructures(canManage ? undefined : session?.employeeId);
 
   return (

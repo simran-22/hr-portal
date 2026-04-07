@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Non-admin/hr can only update their own tasks
-  if (!["admin", "hr"].includes(session.role) && task.employee_id !== session.employeeId) {
+  if (!["admin"].includes(session.role) && task.employee_id !== session.employeeId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session || !["admin", "hr"].includes(session.role)) {
+  if (!session || !["admin"].includes(session.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
   const { id } = await params;

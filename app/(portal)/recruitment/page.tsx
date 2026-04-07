@@ -77,7 +77,7 @@ const JOB_GRADIENT_COLORS = [
 
 export default async function RecruitmentPage() {
   const session = await getSession();
-  const canManage = session && ["admin", "hr", "recruiter"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
 
   const { jobs, candidates } = await getRecruitmentData();
 

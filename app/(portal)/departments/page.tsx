@@ -22,7 +22,7 @@ const GRADIENTS = [
 
 export default async function DepartmentsPage() {
   const session = await getSession();
-  const canManage = session && ["admin", "hr"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
   const departments = await getDepartments();
 
   return (

@@ -54,7 +54,7 @@ export default async function OnboardingPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const canManage = ["admin", "hr"].includes(session.role);
+  const canManage = ["admin"].includes(session.role);
   const groups = await getOnboardingTasks(canManage ? undefined : session.employeeId);
 
   const allTasks = groups.flatMap((g) => g.tasks);

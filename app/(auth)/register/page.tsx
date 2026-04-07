@@ -57,10 +57,7 @@ export default function RegisterPage() {
               <select name="role"
                 className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition">
                 <option value="employee">Employee</option>
-                <option value="hr">HR</option>
-                <option value="manager">Manager</option>
                 <option value="admin">Admin</option>
-                <option value="recruiter">Recruiter</option>
               </select>
             </div>
             <button type="submit" disabled={pending}

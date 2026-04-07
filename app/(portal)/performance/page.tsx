@@ -70,7 +70,7 @@ export default async function PerformancePage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const session = await getSession();
-  const canManage = session && ["admin", "hr", "manager"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
 
   const sp = await searchParams;
   const tab = sp.tab ?? "goals";

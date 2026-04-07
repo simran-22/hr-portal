@@ -57,7 +57,7 @@ export default async function EmployeesPage({
 }) {
   const sp = await searchParams;
   const session = await getSession();
-  const canManage = session && ["admin", "hr"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
   const { employees } = await getEmployees(sp.search, sp.status, sp.department);
   const departments = await getDepartments();
 

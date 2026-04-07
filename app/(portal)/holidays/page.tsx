@@ -19,7 +19,7 @@ export default async function HolidaysPage({
   const session = await getSession();
   const params = await searchParams;
   const year = params.year ? Number(params.year) : new Date().getFullYear();
-  const isAdmin = session && ["admin", "hr"].includes(session.role);
+  const isAdmin = session && ["admin"].includes(session.role);
 
   const { data: holidays } = await supabase
     .from("holidays")

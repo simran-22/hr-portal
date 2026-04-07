@@ -22,7 +22,7 @@ const typeGradient: Record<string, string> = {
 
 export default async function EventsPage() {
   const session = await getSession();
-  const isAdmin = session && ["admin", "hr"].includes(session.role);
+  const isAdmin = session && ["admin"].includes(session.role);
 
   const { data: events } = await supabase
     .from("events")

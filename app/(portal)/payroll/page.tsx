@@ -52,7 +52,7 @@ export default async function PayrollPage({
   const year = parseInt(sp.year ?? String(now.getFullYear()));
 
   const session = await getSession();
-  const canManage = session && ["admin", "hr"].includes(session.role);
+  const canManage = session && ["admin"].includes(session.role);
 
   const { payrolls, stats } = await getPayroll(month, year);
 
