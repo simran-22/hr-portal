@@ -63,6 +63,7 @@ export default function EmployeeDetailPage({
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -77,13 +78,15 @@ export default function EmployeeDetailPage({
     Promise.all([
       fetch(`/api/employees/${id}`).then((r) => r.json()),
       fetch("/api/departments").then((r) => r.json()),
-    ]).then(([emp, depts]) => {
+      fetch("/api/users/profile").then((r) => r.json()),
+    ]).then(([emp, depts, profile]) => {
       if (emp.error) {
         setError(emp.error);
         setLoading(false);
         return;
       }
       setEmployee(emp);
+      setIsAdmin(profile?.role === "admin");
       setForm({
         name: emp.name ?? "",
         phone: emp.phone ?? "",
@@ -205,7 +208,7 @@ export default function EmployeeDetailPage({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!editing && (
+          {!editing && isAdmin && (
             <>
               <button
                 onClick={() => setEditing(true)}
@@ -331,15 +334,17 @@ export default function EmployeeDetailPage({
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <DollarSign className="w-4 h-4 mt-0.5 text-slate-400" />
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Salary</p>
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                  {employee.salary ? `$${employee.salary.toLocaleString()}` : "—"}
-                </p>
+            {isAdmin && (
+              <div className="flex items-start gap-3">
+                <DollarSign className="w-4 h-4 mt-0.5 text-slate-400" />
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Salary</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                    {employee.salary ? `$${employee.salary.toLocaleString()}` : "—"}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex items-start gap-3">
               <CalendarDays className="w-4 h-4 mt-0.5 text-slate-400" />
               <div>
