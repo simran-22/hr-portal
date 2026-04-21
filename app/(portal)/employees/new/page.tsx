@@ -23,7 +23,32 @@ export default function AddEmployeePage() {
     departmentId: "",
     salary: "",
     status: "active",
+    hireDate: "",
+    dateOfBirth: "",
+    probationEndDate: "",
+    basicSalary: "",
+    uan: "",
+    pfNumber: "",
+    pfApplicable: true,
   });
+
+  const setBasicFromSalary = (percent: number) => {
+    const s = Number(form.salary);
+    if (!s) return;
+    setForm((prev) => ({ ...prev, basicSalary: Math.round(s * percent / 100).toString() }));
+  };
+
+  const addMonths = (dateStr: string, months: number): string => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr + "T00:00:00");
+    d.setMonth(d.getMonth() + months);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const setProbationFromHireDate = (months: number) => {
+    if (!form.hireDate) return;
+    setForm((prev) => ({ ...prev, probationEndDate: addMonths(prev.hireDate, months) }));
+  };
 
   useEffect(() => {
     fetch("/api/departments")
@@ -189,6 +214,133 @@ export default function AddEmployeePage() {
                 <option value="terminated">Terminated</option>
               </select>
             </div>
+            <div>
+              <label className={labelClass}>Date of Joining</label>
+              <input
+                name="hireDate"
+                type="date"
+                value={form.hireDate}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Date of Birth</label>
+              <input
+                name="dateOfBirth"
+                type="date"
+                value={form.dateOfBirth}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </div>
+            {form.status === "probation" && (
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Probation End Date</label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    name="probationEndDate"
+                    type="date"
+                    value={form.probationEndDate}
+                    onChange={handleChange}
+                    className={inputClass + " sm:flex-1"}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setProbationFromHireDate(3)}
+                    disabled={!form.hireDate}
+                    className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    + 3 months
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProbationFromHireDate(6)}
+                    disabled={!form.hireDate}
+                    className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    + 6 months
+                  </button>
+                </div>
+                {!form.hireDate && (
+                  <p className="text-xs text-slate-400 mt-1.5">Set Date of Joining first to use quick buttons</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* PF Details section */}
+          <div className="pt-5 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">PF Details</h3>
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.pfApplicable}
+                  onChange={(e) => setForm((prev) => ({ ...prev, pfApplicable: e.target.checked }))}
+                  className="w-4 h-4 rounded accent-violet-600"
+                />
+                <span className="text-xs text-slate-600 dark:text-slate-400">PF Applicable</span>
+              </label>
+            </div>
+
+            {form.pfApplicable && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Basic Salary (monthly)</label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      name="basicSalary"
+                      type="number"
+                      value={form.basicSalary}
+                      onChange={handleChange}
+                      placeholder="e.g. 25000"
+                      className={inputClass + " sm:flex-1"}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setBasicFromSalary(50)}
+                      disabled={!form.salary}
+                      className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      50% of salary
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBasicFromSalary(40)}
+                      disabled={!form.salary}
+                      className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      40% of salary
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1.5">
+                    PF is calculated on basic salary. 2026 Labour Code requires basic ≥ 50% of CTC.
+                  </p>
+                </div>
+                <div>
+                  <label className={labelClass}>UAN (12-digit)</label>
+                  <input
+                    name="uan"
+                    value={form.uan}
+                    onChange={handleChange}
+                    placeholder="101234567890"
+                    maxLength={12}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>PF Account Number</label>
+                  <input
+                    name="pfNumber"
+                    value={form.pfNumber}
+                    onChange={handleChange}
+                    placeholder="e.g. DL/CPM/12345/000"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

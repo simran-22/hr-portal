@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Pencil, Check, Loader2, Mail, Phone, Briefcase, Building2, Calendar, Shield, Camera } from "lucide-react";
+import { X, Pencil, Check, Loader2, Mail, Phone, Briefcase, Building2, Calendar, Shield, Camera, Cake, Clock } from "lucide-react";
 
 type ProfileData = {
   id: string;
@@ -18,6 +18,12 @@ type ProfileData = {
     position: string | null;
     status: string;
     hire_date: string | null;
+    date_of_birth: string | null;
+    probation_end_date: string | null;
+    basic_salary: number | null;
+    uan: string | null;
+    pf_number: string | null;
+    pf_applicable: boolean;
     departments: { name: string } | null;
   } | null;
 };
@@ -31,6 +37,7 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editPosition, setEditPosition] = useState("");
+  const [editDob, setEditDob] = useState("");
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +53,7 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
           setEditName(data.name ?? "");
           setEditPhone(data.employee?.phone ?? "");
           setEditPosition(data.employee?.position ?? "");
+          setEditDob(data.employee?.date_of_birth ?? "");
         })
         .catch(() => {})
         .finally(() => setLoading(false));
@@ -69,7 +77,7 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
       const res = await fetch("/api/users/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName, phone: editPhone, position: editPosition }),
+        body: JSON.stringify({ name: editName, phone: editPhone, position: editPosition, dateOfBirth: editDob }),
       });
       if (res.ok) {
         setProfile((prev) =>
@@ -78,7 +86,7 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
                 ...prev,
                 name: editName,
                 employee: prev.employee
-                  ? { ...prev.employee, name: editName, phone: editPhone, position: editPosition }
+                  ? { ...prev.employee, name: editName, phone: editPhone, position: editPosition, date_of_birth: editDob || null }
                   : prev.employee,
               }
             : prev
@@ -127,7 +135,7 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden">
+        <div className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden max-h-[calc(100vh-5rem)] flex flex-col">
           {/* Header */}
           <div className="bg-gradient-to-r from-violet-500 to-purple-600 px-5 py-6 text-center relative">
             <button
@@ -180,7 +188,7 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
           </div>
 
           {/* Body */}
-          <div className="p-4">
+          <div className="p-4 overflow-y-auto flex-1">
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-5 h-5 animate-spin text-violet-500" />
@@ -247,7 +255,7 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
                   </div>
                 </div>
 
-                {/* Hire Date */}
+                {/* Hire Date (read-only — HR manages) */}
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                   <Calendar className="w-4 h-4 text-violet-500 shrink-0" />
                   <div className="min-w-0">
@@ -261,6 +269,92 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
                     </p>
                   </div>
                 </div>
+
+                {/* Probation Info — read-only, shown only if on probation */}
+                {profile.employee?.status === "probation" && profile.employee?.probation_end_date && (() => {
+                  const end = new Date(profile.employee.probation_end_date + "T00:00:00");
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const daysLeft = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                  const isOverdue = daysLeft < 0;
+                  const isEndingSoon = daysLeft >= 0 && daysLeft <= 7;
+                  const color = isOverdue
+                    ? "from-red-500 to-rose-600"
+                    : isEndingSoon
+                      ? "from-amber-400 to-orange-500"
+                      : "from-blue-500 to-cyan-600";
+                  return (
+                    <div className={`bg-gradient-to-r ${color} rounded-xl px-3 py-2.5 text-white`}>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] uppercase font-semibold tracking-wider text-white/80">Probation</p>
+                          <p className="text-sm font-semibold">
+                            {isOverdue
+                              ? `Ended ${Math.abs(daysLeft)} day${Math.abs(daysLeft) === 1 ? "" : "s"} ago`
+                              : daysLeft === 0
+                                ? "Ends today"
+                                : `${daysLeft} day${daysLeft === 1 ? "" : "s"} remaining`}
+                          </p>
+                          <p className="text-xs text-white/80 mt-0.5">
+                            Ends {end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Date of Birth (employee-editable) */}
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <Cake className="w-4 h-4 text-violet-500 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold tracking-wider">Date of Birth</p>
+                    {editing ? (
+                      <input
+                        type="date"
+                        value={editDob}
+                        onChange={(e) => setEditDob(e.target.value)}
+                        className="text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-violet-500"
+                      />
+                    ) : (
+                      <p className="text-sm text-slate-700 dark:text-slate-300">
+                        {profile.employee?.date_of_birth
+                          ? new Date(profile.employee.date_of_birth + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                          : <span className="text-slate-400 italic">Not set</span>}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* PF Details — shown if PF applicable */}
+                {profile.employee?.pf_applicable && (profile.employee?.uan || profile.employee?.pf_number || profile.employee?.basic_salary) && (
+                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-500/10 dark:to-blue-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-xl px-3 py-2.5">
+                    <p className="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase font-semibold tracking-wider mb-1.5">PF Details</p>
+                    <div className="space-y-1">
+                      {profile.employee.uan && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">UAN</span>
+                          <span className="text-xs font-mono font-medium text-slate-700 dark:text-slate-300">{profile.employee.uan}</span>
+                        </div>
+                      )}
+                      {profile.employee.pf_number && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">PF No.</span>
+                          <span className="text-xs font-mono font-medium text-slate-700 dark:text-slate-300 truncate ml-2">{profile.employee.pf_number}</span>
+                        </div>
+                      )}
+                      {profile.employee.basic_salary != null && (
+                        <div className="flex justify-between items-center pt-1 border-t border-indigo-100 dark:border-indigo-500/20">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">Monthly PF (12%)</span>
+                          <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400">
+                            ₹{Math.round(Number(profile.employee.basic_salary) * 0.12).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Role */}
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">

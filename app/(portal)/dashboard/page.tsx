@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { Users, CalendarOff, Briefcase, DollarSign, TrendingUp, UserCheck, Clock, Target, Megaphone } from "lucide-react";
 import { DashboardCharts } from "@/components/shared/DashboardCharts";
+import { ProbationWidget } from "@/components/shared/ProbationWidget";
 
 async function getDashboardData() {
   const [
@@ -91,6 +92,9 @@ export default async function DashboardPage() {
 
       {/* Charts */}
       <DashboardCharts deptChartData={d.deptChartData} />
+
+      {/* Probation Tracker — HR only */}
+      {session?.role === "admin" && <ProbationWidget />}
 
       {/* Recent + Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

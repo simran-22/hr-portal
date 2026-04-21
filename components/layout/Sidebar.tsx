@@ -6,12 +6,15 @@ import {
   Building2, LayoutDashboard, Users, CalendarCheck, CalendarOff,
   DollarSign, TrendingUp, Briefcase, Settings, ChevronLeft, ChevronRight,
   LogOut, CalendarDays, PartyPopper, BarChart3, FolderOpen, GitBranch,
-  UserPlus, UserMinus, Banknote, Gift, Megaphone,
+  UserPlus, UserMinus, Banknote, Gift, Megaphone, Cake, Landmark,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
-const navGroups = [
+type NavItem = { label: string; href: string; icon: typeof Building2; adminOnly?: boolean };
+type NavGroup = { label: string; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
   {
     label: "HRMS",
     items: [
@@ -23,6 +26,7 @@ const navGroups = [
       { label: "Leaves",       href: "/leaves",       icon: CalendarOff },
       { label: "Holidays",     href: "/holidays",     icon: CalendarDays },
       { label: "Events",       href: "/events",       icon: PartyPopper },
+      { label: "Anniversaries",href: "/anniversaries", icon: Cake, adminOnly: true },
       { label: "Onboarding",   href: "/onboarding",   icon: UserPlus },
       { label: "Offboarding",  href: "/offboarding",  icon: UserMinus },
       { label: "Announcements",href: "/announcements", icon: Megaphone },
@@ -34,6 +38,7 @@ const navGroups = [
       { label: "Payroll",      href: "/payroll",      icon: DollarSign },
       { label: "Salary",       href: "/salary",       icon: Banknote },
       { label: "Incentives",   href: "/incentives",   icon: Gift },
+      { label: "PF Report",    href: "/payroll/pf",   icon: Landmark, adminOnly: true },
     ],
   },
   {
@@ -90,7 +95,7 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
               </p>
             )}
             <div className="space-y-0.5">
-              {group.items.map(({ label, href, icon: Icon }) => {
+              {group.items.filter((i) => !i.adminOnly || userRole === "admin").map(({ label, href, icon: Icon }) => {
                 const active = pathname.startsWith(href);
                 return (
                   <Link key={href} href={href}

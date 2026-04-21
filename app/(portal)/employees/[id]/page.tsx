@@ -25,6 +25,11 @@ interface Employee {
   salary: number;
   status: string;
   hire_date: string | null;
+  probation_end_date: string | null;
+  basic_salary: number | null;
+  uan: string | null;
+  pf_number: string | null;
+  pf_applicable: boolean;
   departments: { id: string; name: string } | null;
 }
 
@@ -72,7 +77,30 @@ export default function EmployeeDetailPage({
     departmentId: "",
     salary: "",
     status: "active",
+    probationEndDate: "",
+    basicSalary: "",
+    uan: "",
+    pfNumber: "",
+    pfApplicable: true,
   });
+
+  const addMonths = (dateStr: string, months: number): string => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr + "T00:00:00");
+    d.setMonth(d.getMonth() + months);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const setProbationFromHireDate = (months: number) => {
+    if (!employee?.hire_date) return;
+    setForm((prev) => ({ ...prev, probationEndDate: addMonths(employee.hire_date!, months) }));
+  };
+
+  const setBasicFromSalary = (percent: number) => {
+    const s = Number(form.salary);
+    if (!s) return;
+    setForm((prev) => ({ ...prev, basicSalary: Math.round(s * percent / 100).toString() }));
+  };
 
   useEffect(() => {
     Promise.all([
@@ -94,6 +122,11 @@ export default function EmployeeDetailPage({
         departmentId: emp.department_id ?? "",
         salary: emp.salary?.toString() ?? "",
         status: emp.status ?? "active",
+        probationEndDate: emp.probation_end_date ?? "",
+        basicSalary: emp.basic_salary?.toString() ?? "",
+        uan: emp.uan ?? "",
+        pfNumber: emp.pf_number ?? "",
+        pfApplicable: emp.pf_applicable ?? true,
       });
       setDepartments(depts.departments ?? depts ?? []);
       setLoading(false);
@@ -273,6 +306,110 @@ export default function EmployeeDetailPage({
                   <option value="terminated">Terminated</option>
                 </select>
               </div>
+              {form.status === "probation" && (
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Probation End Date</label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      name="probationEndDate"
+                      type="date"
+                      value={form.probationEndDate}
+                      onChange={handleChange}
+                      className={inputClass + " sm:flex-1"}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setProbationFromHireDate(3)}
+                      disabled={!employee?.hire_date}
+                      className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      + 3 months
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProbationFromHireDate(6)}
+                      disabled={!employee?.hire_date}
+                      className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      + 6 months
+                    </button>
+                  </div>
+                  {!employee?.hire_date && (
+                    <p className="text-xs text-slate-400 mt-1.5">Hire Date not set — quick buttons disabled</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* PF Details */}
+            <div className="pt-5 mt-5 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">PF Details</h3>
+                <label className="inline-flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.pfApplicable}
+                    onChange={(e) => setForm((prev) => ({ ...prev, pfApplicable: e.target.checked }))}
+                    className="w-4 h-4 rounded accent-violet-600"
+                  />
+                  <span className="text-xs text-slate-600 dark:text-slate-400">PF Applicable</span>
+                </label>
+              </div>
+
+              {form.pfApplicable && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="sm:col-span-2">
+                    <label className={labelClass}>Basic Salary (monthly)</label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        name="basicSalary"
+                        type="number"
+                        value={form.basicSalary}
+                        onChange={handleChange}
+                        placeholder="e.g. 25000"
+                        className={inputClass + " sm:flex-1"}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setBasicFromSalary(50)}
+                        disabled={!form.salary}
+                        className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                      >
+                        50% of salary
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBasicFromSalary(40)}
+                        disabled={!form.salary}
+                        className="px-3 py-2 text-xs font-medium rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                      >
+                        40% of salary
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>UAN (12-digit)</label>
+                    <input
+                      name="uan"
+                      value={form.uan}
+                      onChange={handleChange}
+                      placeholder="101234567890"
+                      maxLength={12}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>PF Account Number</label>
+                    <input
+                      name="pfNumber"
+                      value={form.pfNumber}
+                      onChange={handleChange}
+                      placeholder="e.g. DL/CPM/12345/000"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -360,7 +497,64 @@ export default function EmployeeDetailPage({
                 </p>
               </div>
             </div>
+            {employee.status === "probation" && employee.probation_end_date && (
+              <div className="flex items-start gap-3">
+                <CalendarDays className="w-4 h-4 mt-0.5 text-blue-500" />
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Probation Ends</p>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    {new Date(employee.probation_end_date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* PF Details — admin only */}
+          {isAdmin && employee.pf_applicable && (employee.basic_salary || employee.uan || employee.pf_number) && (
+            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="sm:col-span-2">
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">PF Details</h3>
+              </div>
+              {employee.basic_salary != null && (
+                <div className="flex items-start gap-3">
+                  <DollarSign className="w-4 h-4 mt-0.5 text-slate-400" />
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Basic Salary</p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                      ₹{Number(employee.basic_salary).toLocaleString("en-IN")}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {employee.uan && (
+                <div className="flex items-start gap-3">
+                  <Briefcase className="w-4 h-4 mt-0.5 text-slate-400" />
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">UAN</p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100 font-mono">
+                      {employee.uan}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {employee.pf_number && (
+                <div className="flex items-start gap-3">
+                  <Briefcase className="w-4 h-4 mt-0.5 text-slate-400" />
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">PF Account Number</p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100 font-mono">
+                      {employee.pf_number}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

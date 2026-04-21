@@ -19,7 +19,7 @@ export async function GET() {
   if (session.employeeId) {
     const { data } = await supabase
       .from("employees")
-      .select("id, name, email, phone, position, status, hire_date, departments(name)")
+      .select("id, name, email, phone, position, status, hire_date, date_of_birth, probation_end_date, basic_salary, uan, pf_number, pf_applicable, departments(name)")
       .eq("id", session.employeeId)
       .single();
     employee = data;
@@ -27,7 +27,7 @@ export async function GET() {
     // Fallback: find employee by email
     const { data } = await supabase
       .from("employees")
-      .select("id, name, email, phone, position, status, hire_date, departments(name)")
+      .select("id, name, email, phone, position, status, hire_date, date_of_birth, probation_end_date, basic_salary, uan, pf_number, pf_applicable, departments(name)")
       .eq("email", profile.email)
       .single();
     employee = data;
@@ -41,20 +41,20 @@ export async function PUT(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { name, phone, position } = body;
+  const { name, phone, position, dateOfBirth } = body;
 
   if (name) {
     const { error } = await supabase.from("profiles").update({ name }).eq("id", session.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  // Update employee record if exists
   const employeeId = session.employeeId;
   if (employeeId) {
-    const updates: Record<string, string> = {};
+    const updates: Record<string, string | null> = {};
     if (phone !== undefined) updates.phone = phone;
     if (position !== undefined) updates.position = position;
     if (name) updates.name = name;
+    if (dateOfBirth !== undefined) updates.date_of_birth = dateOfBirth || null;
     if (Object.keys(updates).length > 0) {
       await supabase.from("employees").update(updates).eq("id", employeeId);
     }

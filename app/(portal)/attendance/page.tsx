@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { UserCheck, UserX, CalendarOff, ClipboardList } from "lucide-react";
 import { AttendanceActions } from "@/components/shared/AttendanceActions";
+import { HoursSummary } from "@/components/shared/HoursSummary";
+import { getSession } from "@/lib/session";
 
 async function getTodayAttendance() {
   const today = new Date().toISOString().split("T")[0];
@@ -54,7 +56,11 @@ function formatDateLong(dateStr: string) {
 }
 
 export default async function AttendancePage() {
-  const { records, today, stats } = await getTodayAttendance();
+  const [{ records, today, stats }, session] = await Promise.all([
+    getTodayAttendance(),
+    getSession(),
+  ]);
+  const isAdmin = session?.role === "admin";
 
   const statCards = [
     {
@@ -121,6 +127,9 @@ export default async function AttendancePage() {
           </div>
         ))}
       </div>
+
+      {/* Hours Summary */}
+      <HoursSummary isAdmin={isAdmin} />
 
       {/* Today's Attendance Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
