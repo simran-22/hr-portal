@@ -55,8 +55,8 @@ export function GeneratePayrollButton() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition-all hover:shadow-md">
-        <Plus className="w-4 h-4" /> Generate Payroll
+      <button onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-md px-4 py-1.5 text-sm font-medium shadow-sm transition-all hover:shadow-md">
+        <Plus className="w-4 h-4" /> Add
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

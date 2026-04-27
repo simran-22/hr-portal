@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data, error } = await supabase
     .from("payroll")
-    .select("*, employees(id, name, employee_id, position)")
+    .select("*, employees(id, name, position)")
     .eq("id", id)
     .single();
 
@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       processed_at: status === "paid" ? new Date().toISOString() : null,
     })
     .eq("id", id)
-    .select("*, employees(id, name, employee_id, position)")
+    .select("*, employees(id, name, position)")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });

@@ -80,7 +80,7 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
   return (
     <div className="flex h-screen shrink-0">
       {/* Icon rail (always visible) */}
-      <aside className="w-16 flex flex-col items-center py-4 bg-slate-900 dark:bg-slate-950 border-r border-slate-800 shrink-0">
+      <aside className="w-16 flex flex-col items-center py-3 bg-slate-900 dark:bg-slate-950 border-r border-slate-800 shrink-0 overflow-y-auto">
         {/* Logo */}
         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md mb-3">
           <Building2 className="w-5 h-5 text-white" />
@@ -97,7 +97,7 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
         </button>
 
         {/* Quick actions */}
-        <div className="flex flex-col items-center gap-2 flex-1">
+        <div className="flex flex-col items-center gap-1.5">
           <button
             type="button"
             title="Search"
@@ -123,8 +123,11 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
           </button>
         </div>
 
+        {/* Spacer (uses flex-grow but minimum 0 so bottom items are never pushed off-screen) */}
+        <div className="flex-1 min-h-2" />
+
         {/* Bottom: settings + profile + logout */}
-        <div className="flex flex-col items-center gap-2 mt-2">
+        <div className="flex flex-col items-center gap-1.5 shrink-0">
           <Link
             href="/settings"
             title="Settings"
@@ -132,9 +135,7 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
           >
             <Settings className="w-5 h-5" />
           </Link>
-          <div className="my-1">
-            <ProfileDropdown userName={userName} userRole={userRole} />
-          </div>
+          <ProfileDropdown userName={userName} userRole={userRole} />
           <form action={logout}>
             <button
               type="submit"
@@ -198,9 +199,9 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
             })}
           </nav>
 
-          {/* Footer user info */}
-          <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800">
-            <Link href="/settings" className="flex items-center gap-2.5 group">
+          {/* Footer user info + logout */}
+          <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+            <Link href="/settings" className="flex items-center gap-2.5 flex-1 min-w-0 group">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
                 {userName.charAt(0).toUpperCase()}
               </div>
@@ -209,6 +210,15 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
                 <p className="text-[10px] capitalize text-slate-400 dark:text-slate-500">{userRole}</p>
               </div>
             </Link>
+            <form action={logout}>
+              <button
+                type="submit"
+                title="Sign out"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition shrink-0"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </form>
           </div>
         </aside>
       )}

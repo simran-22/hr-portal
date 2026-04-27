@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from("payroll")
-    .select("*, employees(id, name, employee_id, position)")
+    .select("*, employees(id, name, position)")
     .eq("month", month)
     .eq("year", year)
     .order("created_at", { ascending: false });
@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { employeeId, month, year, basic, allowances, deductions, tax, notes } = body;
-  const net = Number(basic) + Number(allowances) - Number(deductions) - Number(tax);
+  const { employeeId, month, year, basic, allowances, deductions } = body;
+  const net = Number(basic) + (Number(allowances) || 0) - (Number(deductions) || 0);
 
   const { data, error } = await supabase
     .from("payroll")
@@ -46,11 +46,10 @@ export async function POST(req: NextRequest) {
       basic: Number(basic),
       allowances: Number(allowances) || 0,
       deductions: Number(deductions) || 0,
-      tax: Number(tax) || 0,
       net,
-      notes,
+      status: "draft",
     })
-    .select("*, employees(id, name, employee_id, position)")
+    .select("*, employees(id, name, position)")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
