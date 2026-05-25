@@ -17,8 +17,20 @@ export async function updateLeaveStatus(id: string, status: "approved" | "reject
   if (!leave) return { error: "Leave not found" };
 
   const isAdmin = session.role === "admin";
+
+  // Resolve employeeId — fall back to email lookup
+  let myEmployeeId = session.employeeId ?? null;
+  if (!myEmployeeId && session.email) {
+    const { data: emp } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("email", session.email)
+      .maybeSingle();
+    myEmployeeId = emp?.id ?? null;
+  }
+
   const empRel = (leave as unknown as { employees: { reports_to: string | null } | null }).employees;
-  const isDirectManager = !!session.employeeId && empRel?.reports_to === session.employeeId;
+  const isDirectManager = !!myEmployeeId && empRel?.reports_to === myEmployeeId;
 
   if (!isAdmin && !isDirectManager) {
     return { error: "You don't have permission to approve this leave." };

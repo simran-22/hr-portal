@@ -7,7 +7,17 @@ export async function GET() {
   if (!session) return NextResponse.json({ count: 0 });
 
   const isAdmin = session.role === "admin";
-  const myEmployeeId = session.employeeId ?? null;
+
+  // Resolve employeeId — fall back to email lookup
+  let myEmployeeId = session.employeeId ?? null;
+  if (!myEmployeeId && session.email) {
+    const { data: emp } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("email", session.email)
+      .maybeSingle();
+    myEmployeeId = emp?.id ?? null;
+  }
 
   // Admin sees all pending
   if (isAdmin) {

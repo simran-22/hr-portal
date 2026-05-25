@@ -31,8 +31,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!leaveCheck) return NextResponse.json({ error: "Leave not found" }, { status: 404 });
 
   const isAdmin = session.role === "admin";
+
+  // Resolve employeeId — fall back to email lookup
+  let myEmployeeId = session.employeeId ?? null;
+  if (!myEmployeeId && session.email) {
+    const { data: emp } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("email", session.email)
+      .maybeSingle();
+    myEmployeeId = emp?.id ?? null;
+  }
+
   const empRel = (leaveCheck as unknown as { employees: { reports_to: string | null } | null }).employees;
-  const isDirectManager = !!session.employeeId && empRel?.reports_to === session.employeeId;
+  const isDirectManager = !!myEmployeeId && empRel?.reports_to === myEmployeeId;
 
   if (!isAdmin && !isDirectManager) {
     return NextResponse.json({ error: "You don't have permission to approve this leave." }, { status: 403 });

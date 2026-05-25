@@ -24,7 +24,17 @@ async function getLeavesForUser(status?: string) {
   if (!session) return { leaves: [], stats: emptyStats(), isAdmin: false, isManager: false };
 
   const isAdmin = session.role === "admin";
-  const myEmployeeId = session.employeeId ?? null;
+
+  // Resolve employeeId — from session, or fall back to email lookup
+  let myEmployeeId = session.employeeId ?? null;
+  if (!myEmployeeId && session.email) {
+    const { data: emp } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("email", session.email)
+      .maybeSingle();
+    myEmployeeId = emp?.id ?? null;
+  }
 
   // Determine if user is a manager (has any direct reports)
   let directReportIds: string[] = [];
@@ -216,10 +226,10 @@ export default async function LeavesPage({
   const canActOn = (l: LeaveRow) => isAdmin || l.relation === "team";
 
   const statCards = [
-    { label: "Total Requests", value: stats.total, gradient: "from-violet-500 to-purple-600", icon: CalendarDays },
-    { label: "Pending", value: stats.pending, gradient: "from-amber-400 to-orange-500", icon: Clock },
-    { label: "Approved", value: stats.approved, gradient: "from-emerald-400 to-teal-600", icon: CheckCircle },
-    { label: "Rejected", value: stats.rejected, gradient: "from-red-400 to-rose-600", icon: XCircle },
+    { label: "Total Requests", value: stats.total, gradient: "from-violet-500 to-purple-600", icon: CalendarDays, filter: "all" as const },
+    { label: "Pending", value: stats.pending, gradient: "from-amber-400 to-orange-500", icon: Clock, filter: "pending" as const },
+    { label: "Approved", value: stats.approved, gradient: "from-emerald-400 to-teal-600", icon: CheckCircle, filter: "approved" as const },
+    { label: "Rejected", value: stats.rejected, gradient: "from-red-400 to-rose-600", icon: XCircle, filter: "rejected" as const },
   ];
 
   return (
@@ -257,22 +267,31 @@ export default async function LeavesPage({
       {/* Leave Balance */}
       <LeaveBalanceCard />
 
-      {/* Stat Cards */}
+      {/* Stat Cards — clickable to filter */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        {statCards.map(({ label, value, gradient, icon: Icon }) => (
-          <div
-            key={label}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex items-start gap-4 hover:shadow-md transition-shadow"
-          >
-            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg shrink-0`}>
-              <Icon className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{label}</p>
-              <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{value}</p>
-            </div>
-          </div>
-        ))}
+        {statCards.map(({ label, value, gradient, icon: Icon, filter }) => {
+          const isActive = (sp.status ?? "all") === filter;
+          const href = filter === "all" ? "/leaves" : `/leaves?status=${filter}`;
+          return (
+            <a
+              key={label}
+              href={href}
+              className={`bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border flex items-start gap-4 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer ${
+                isActive
+                  ? "border-violet-300 dark:border-violet-500/40 ring-2 ring-violet-200 dark:ring-violet-500/20"
+                  : "border-slate-100 dark:border-slate-800"
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg shrink-0`}>
+                <Icon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">{label}</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">{value}</p>
+              </div>
+            </a>
+          );
+        })}
       </div>
 
       {/* Filter Tabs */}
