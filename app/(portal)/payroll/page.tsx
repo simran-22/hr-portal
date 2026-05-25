@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { ArrowDownRight, ArrowUpRight, DollarSign, Search, Filter, FileText, ExternalLink, PlayCircle } from "lucide-react";
 import Link from "next/link";
+import { Money } from "@/components/shared/Money";
+import { CurrencyToggle } from "@/components/shared/CurrencyToggle";
 import { GeneratePayrollButton } from "@/components/shared/GeneratePayrollButton";
 import { PayrollRowActions } from "@/components/shared/PayrollRowActions";
 import { getSession } from "@/lib/session";
@@ -94,33 +96,6 @@ function earningsFor(p: PayrollRow): number {
   return Number(p.basic ?? 0) + Number(p.allowances ?? 0) + Number(p.reimbursement ?? 0) + Number(p.benefits ?? 0);
 }
 
-function buildRoleStats(
-  current: PayrollRow[],
-  previous: { net: number | null; employees: { id: string; position: string | null } | null }[]
-) {
-  const sumByRole = (records: { net: number | null; position: string | null }[]) => {
-    const map = new Map<string, number>();
-    for (const r of records) {
-      const key = r.position?.trim() || "Unassigned";
-      map.set(key, (map.get(key) ?? 0) + (Number(r.net) || 0));
-    }
-    return map;
-  };
-  const cur = sumByRole(current.map((p) => ({ net: p.net, position: p.employees?.position ?? null })));
-  const prev = sumByRole(previous.map((p) => ({ net: p.net, position: p.employees?.position ?? null })));
-
-  const roles = Array.from(cur.entries())
-    .map(([role, total]) => {
-      const prevTotal = prev.get(role) ?? 0;
-      const change = prevTotal > 0 ? ((total - prevTotal) / prevTotal) * 100 : null;
-      return { role, total, change };
-    })
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 4);
-
-  return roles;
-}
-
 function buildEarningsChangeMap(
   previous: {
     net: number | null;
@@ -158,9 +133,6 @@ const statusBadge = (status: string) => {
   );
 };
 
-function formatCurrency(amount: number) {
-  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
 
 const avatarColors = [
   "from-violet-500 to-purple-600",
@@ -187,7 +159,6 @@ export default async function PayrollPage({
   const canManage = session && ["admin"].includes(session.role);
 
   const { payrolls, prevData } = await getPayroll(month, year, search);
-  const roleStats = buildRoleStats(payrolls, prevData);
   const earningsChangeMap = buildEarningsChangeMap(prevData);
 
   const years = [2023, 2024, 2025, 2026];
@@ -236,6 +207,8 @@ export default async function PayrollPage({
             />
           </div>
         </form>
+
+        <CurrencyToggle />
       </div>
 
       {/* Sub-tabs + Add button */}
@@ -274,37 +247,6 @@ export default async function PayrollPage({
           </div>
         )}
       </div>
-
-      {/* Role stat cards */}
-      {roleStats.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {roleStats.map(({ role, total, change }) => {
-            const isUp = change != null && change >= 0;
-            return (
-              <div
-                key={role}
-                className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800"
-              >
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">{role}</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-3">{formatCurrency(total)}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 flex items-center gap-1">
-                  {change == null ? (
-                    <span className="text-slate-400">—</span>
-                  ) : (
-                    <>
-                      <span className={`inline-flex items-center gap-0.5 font-semibold ${isUp ? "text-emerald-500" : "text-red-500"}`}>
-                        {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                        {Math.abs(change).toFixed(2)}%
-                      </span>
-                      <span>Since last month</span>
-                    </>
-                  )}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
 
       {/* Employee table */}
       {activeTab === "salary" && (
@@ -372,7 +314,7 @@ export default async function PayrollPage({
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums">
-                          <p className="font-medium text-violet-600 dark:text-violet-400">{formatCurrency(earnings)}</p>
+                          <p className="font-medium text-violet-600 dark:text-violet-400"><Money amount={earnings} /></p>
                           {change != null ? (
                             <p className={`text-[10px] ${isUp ? "text-emerald-500" : "text-red-500"} flex items-center gap-0.5 justify-end`}>
                               {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
@@ -383,19 +325,19 @@ export default async function PayrollPage({
                           )}
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
-                          {formatCurrency(p.tax ?? 0)}
+                          <Money amount={Number(p.tax ?? 0)} />
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
-                          {formatCurrency(p.reimbursement ?? 0)}
+                          <Money amount={Number(p.reimbursement ?? 0)} />
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
-                          {formatCurrency(p.benefits ?? 0)}
+                          <Money amount={Number(p.benefits ?? 0)} />
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
-                          {formatCurrency(p.post_tax_deductions ?? 0)}
+                          <Money amount={Number(p.post_tax_deductions ?? 0)} />
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums font-bold text-slate-800 dark:text-slate-100">
-                          {formatCurrency(p.net ?? 0)}
+                          <Money amount={Number(p.net ?? 0)} />
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs whitespace-nowrap">
                           {paymentMethodLabel(p.payment_method)}
@@ -453,7 +395,7 @@ export default async function PayrollPage({
                       </div>
                     </div>
                     <div className="text-right shrink-0 mr-2">
-                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">{formatCurrency(p.net ?? 0)}</p>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums"><Money amount={Number(p.net ?? 0)} /></p>
                       <p className="text-xs text-slate-400">{statusBadge(p.status)}</p>
                     </div>
                     <a
