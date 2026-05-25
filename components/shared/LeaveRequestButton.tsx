@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X, Loader2, CalendarDays } from "lucide-react";
+import { Plus, X, Loader2, CalendarDays, AlertCircle } from "lucide-react";
+import { differenceInBusinessDays } from "date-fns";
 
 export function LeaveRequestButton() {
   const router = useRouter();
@@ -10,6 +11,15 @@ export function LeaveRequestButton() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ type: "annual", fromDate: "", toDate: "", reason: "" });
+
+  const dayPreview = useMemo(() => {
+    if (!form.fromDate || !form.toDate) return null;
+    const from = new Date(form.fromDate);
+    const to = new Date(form.toDate);
+    if (to < from) return { days: 0, invalid: true };
+    const days = Math.max(1, differenceInBusinessDays(to, from) + 1);
+    return { days, invalid: false };
+  }, [form.fromDate, form.toDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +97,22 @@ export function LeaveRequestButton() {
                   <input type="date" value={form.toDate} onChange={(e) => setForm({ ...form, toDate: e.target.value })} className={inputClass} required />
                 </div>
               </div>
+
+              {dayPreview && (
+                dayPreview.invalid ? (
+                  <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs px-3 py-2 rounded-lg border border-red-100 dark:border-red-500/20 flex items-center gap-2">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    To date must be on or after From date.
+                  </div>
+                ) : (
+                  <div className="bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 rounded-lg px-3 py-2 flex items-center justify-between text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">Total leave (business days, both dates inclusive):</span>
+                    <span className="font-bold text-violet-700 dark:text-violet-400">
+                      {dayPreview.days} {dayPreview.days === 1 ? "day" : "days"}
+                    </span>
+                  </div>
+                )
+              )}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reason</label>
                 <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={3} placeholder="Brief reason for leave..." className={inputClass + " resize-none"} />

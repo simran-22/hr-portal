@@ -271,7 +271,7 @@ export default async function LeavesPage({
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         {statCards.map(({ label, value, gradient, icon: Icon, filter }) => {
           const isActive = (sp.status ?? "all") === filter;
-          const href = filter === "all" ? "/leaves" : `/leaves?status=${filter}`;
+          const href = (filter === "all" ? "/leaves" : `/leaves?status=${filter}`) + "#leaves-list";
           return (
             <a
               key={label}
@@ -295,7 +295,7 @@ export default async function LeavesPage({
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div id="leaves-list" className="flex items-center gap-2 flex-wrap scroll-mt-24">
         <ListFilter className="w-4 h-4 text-slate-400" />
         {(["all", "pending", "approved", "rejected"] as const).map((s) => {
           const isActive = (sp.status ?? "all") === s;
