@@ -46,6 +46,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (body.uan !== undefined) updates.uan = body.uan || null;
   if (body.pfNumber !== undefined) updates.pf_number = body.pfNumber || null;
   if (body.pfApplicable !== undefined) updates.pf_applicable = body.pfApplicable;
+  if (body.reportsTo !== undefined) {
+    // prevent self-reference
+    if (body.reportsTo === id) {
+      return NextResponse.json({ error: "An employee cannot report to themselves." }, { status: 400 });
+    }
+    updates.reports_to = body.reportsTo || null;
+  }
 
   const { data, error } = await supabase
     .from("employees")

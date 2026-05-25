@@ -30,7 +30,14 @@ interface Employee {
   uan: string | null;
   pf_number: string | null;
   pf_applicable: boolean;
+  reports_to: string | null;
   departments: { id: string; name: string } | null;
+}
+
+interface ManagerOption {
+  id: string;
+  name: string;
+  position: string | null;
 }
 
 interface Department {
@@ -63,6 +70,8 @@ export default function EmployeeDetailPage({
   const router = useRouter();
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [managers, setManagers] = useState<ManagerOption[]>([]);
+  const [manager, setManager] = useState<ManagerOption | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -82,6 +91,7 @@ export default function EmployeeDetailPage({
     uan: "",
     pfNumber: "",
     pfApplicable: true,
+    reportsTo: "",
   });
 
   const addMonths = (dateStr: string, months: number): string => {
@@ -107,7 +117,8 @@ export default function EmployeeDetailPage({
       fetch(`/api/employees/${id}`).then((r) => r.json()),
       fetch("/api/departments").then((r) => r.json()),
       fetch("/api/users/profile").then((r) => r.json()),
-    ]).then(([emp, depts, profile]) => {
+      fetch("/api/employees?limit=500").then((r) => r.json()),
+    ]).then(([emp, depts, profile, all]) => {
       if (emp.error) {
         setError(emp.error);
         setLoading(false);
@@ -127,8 +138,23 @@ export default function EmployeeDetailPage({
         uan: emp.uan ?? "",
         pfNumber: emp.pf_number ?? "",
         pfApplicable: emp.pf_applicable ?? true,
+        reportsTo: emp.reports_to ?? "",
       });
       setDepartments(depts.departments ?? depts ?? []);
+
+      const opts: ManagerOption[] = (all.employees ?? [])
+        .filter((e: { id: string }) => e.id !== id)
+        .map((e: { id: string; name: string; position: string | null }) => ({
+          id: e.id, name: e.name, position: e.position,
+        }))
+        .sort((a: ManagerOption, b: ManagerOption) => a.name.localeCompare(b.name));
+      setManagers(opts);
+
+      if (emp.reports_to) {
+        const m = opts.find((o) => o.id === emp.reports_to);
+        if (m) setManager(m);
+      }
+
       setLoading(false);
     });
   }, [id]);
@@ -290,6 +316,17 @@ export default function EmployeeDetailPage({
                   <option value="">Select department</option>
                   {departments.map((d) => (
                     <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Reports To</label>
+                <select name="reportsTo" value={form.reportsTo} onChange={handleChange} className={inputClass}>
+                  <option value="">— No manager (top of hierarchy) —</option>
+                  {managers.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}{m.position ? ` · ${m.position}` : ""}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -497,6 +534,17 @@ export default function EmployeeDetailPage({
                 </p>
               </div>
             </div>
+            {manager && (
+              <div className="flex items-start gap-3">
+                <Briefcase className="w-4 h-4 mt-0.5 text-violet-500" />
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Reports To</p>
+                  <a href={`/employees/${manager.id}`} className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:underline">
+                    {manager.name}{manager.position ? ` · ${manager.position}` : ""}
+                  </a>
+                </div>
+              </div>
+            )}
             {employee.status === "probation" && employee.probation_end_date && (
               <div className="flex items-start gap-3">
                 <CalendarDays className="w-4 h-4 mt-0.5 text-blue-500" />

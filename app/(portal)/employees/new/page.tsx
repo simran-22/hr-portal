@@ -9,9 +9,16 @@ interface Department {
   name: string;
 }
 
+interface Manager {
+  id: string;
+  name: string;
+  position: string | null;
+}
+
 export default function AddEmployeePage() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [managers, setManagers] = useState<Manager[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,6 +37,7 @@ export default function AddEmployeePage() {
     uan: "",
     pfNumber: "",
     pfApplicable: true,
+    reportsTo: "",
   });
 
   const setBasicFromSalary = (percent: number) => {
@@ -54,6 +62,16 @@ export default function AddEmployeePage() {
     fetch("/api/departments")
       .then((r) => r.json())
       .then((data) => setDepartments(data.departments ?? data ?? []))
+      .catch(() => {});
+
+    fetch("/api/employees?limit=500")
+      .then((r) => r.json())
+      .then((data) => {
+        const list: Manager[] = (data.employees ?? []).map((e: { id: string; name: string; position: string | null }) => ({
+          id: e.id, name: e.name, position: e.position,
+        }));
+        setManagers(list.sort((a, b) => a.name.localeCompare(b.name)));
+      })
       .catch(() => {});
   }, []);
 
@@ -185,6 +203,22 @@ export default function AddEmployeePage() {
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Reports To</label>
+              <select
+                name="reportsTo"
+                value={form.reportsTo}
+                onChange={handleChange}
+                className={inputClass}
+              >
+                <option value="">— No manager (top of hierarchy) —</option>
+                {managers.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}{m.position ? ` · ${m.position}` : ""}
                   </option>
                 ))}
               </select>
