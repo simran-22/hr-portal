@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data, error } = await supabase
     .from("leaves")
-    .select("*, employees(id, name, employee_id)")
+    .select("*, employees(id, name)")
     .eq("id", id)
     .single();
 
@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       rejected_reason: rejectedReason ?? null,
     })
     .eq("id", id)
-    .select("*, employees(id, name, employee_id)")
+    .select("*, employees(id, name)")
     .single();
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 });
