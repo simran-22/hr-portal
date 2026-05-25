@@ -38,14 +38,15 @@ export function PayrollRowActions({
           <Mail className="w-4 h-4" />
         </a>
       )}
-      <button
-        type="button"
-        onClick={() => window.print()}
-        title="Print"
+      <a
+        href={`/payroll/${id}/payslip`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="View / Print Payslip"
         className="w-8 h-8 rounded-lg flex items-center justify-center text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 transition"
       >
         <Printer className="w-4 h-4" />
-      </button>
+      </a>
       {canDelete && (
         <button
           type="button"

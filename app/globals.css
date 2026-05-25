@@ -156,3 +156,30 @@
     font-family: 'Jost', ui-sans-serif, system-ui, sans-serif;
   }
 }
+
+/* Print styles — clean payslip output, hide app chrome */
+@media print {
+  /* Hide layout chrome */
+  aside, header, nav, .print\:hidden {
+    display: none !important;
+  }
+  /* Force full-width content area */
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  body, html {
+    background: white !important;
+    color: black !important;
+  }
+  /* Page margins for printed document */
+  @page {
+    margin: 12mm;
+    size: A4 portrait;
+  }
+  /* Ensure backgrounds and colors are preserved in print (Chrome/Edge) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

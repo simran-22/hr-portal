@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import { ArrowDownRight, ArrowUpRight, DollarSign, Search, Filter } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, DollarSign, Search, Filter, FileText, ExternalLink, PlayCircle } from "lucide-react";
+import Link from "next/link";
 import { GeneratePayrollButton } from "@/components/shared/GeneratePayrollButton";
 import { PayrollRowActions } from "@/components/shared/PayrollRowActions";
 import { getSession } from "@/lib/session";
@@ -13,9 +14,15 @@ type PayrollRow = {
   basic: number | null;
   allowances: number | null;
   deductions: number | null;
+  tax: number | null;
+  reimbursement: number | null;
+  benefits: number | null;
+  post_tax_deductions: number | null;
+  payment_method: string | null;
   net: number | null;
   status: string;
   employees: {
+    id: string;
     name: string;
     email: string | null;
     position: string | null;
@@ -23,11 +30,21 @@ type PayrollRow = {
   } | null;
 };
 
+const paymentMethodLabel = (method: string | null) => {
+  const map: Record<string, string> = {
+    direct_deposit: "Direct Deposit",
+    cheque: "Cheque",
+    cash: "Cash",
+    upi: "UPI",
+  };
+  return map[method ?? "direct_deposit"] ?? "Direct Deposit";
+};
+
 async function getPayroll(month: number, year: number, search: string) {
   let query = supabase
     .from("payroll")
     .select(
-      "id, month, year, basic, allowances, deductions, net, status, employees(name, email, position, departments(name))"
+      "id, month, year, basic, allowances, deductions, tax, reimbursement, benefits, post_tax_deductions, payment_method, net, status, employees(id, name, email, position, departments(name))"
     )
     .eq("month", month)
     .eq("year", year)
@@ -55,16 +72,31 @@ async function getPayroll(month: number, year: number, search: string) {
   }
   const { data: prevData } = await supabase
     .from("payroll")
-    .select("net, employees(position)")
+    .select("net, basic, allowances, reimbursement, benefits, employee_id, employees(id, position)")
     .eq("month", prevMonth)
     .eq("year", prevYear);
 
-  return { payrolls, prevData: (prevData ?? []) as unknown as { net: number | null; employees: { position: string | null } | null }[] };
+  return {
+    payrolls,
+    prevData: (prevData ?? []) as unknown as {
+      net: number | null;
+      basic: number | null;
+      allowances: number | null;
+      reimbursement: number | null;
+      benefits: number | null;
+      employee_id: string;
+      employees: { id: string; position: string | null } | null;
+    }[],
+  };
+}
+
+function earningsFor(p: PayrollRow): number {
+  return Number(p.basic ?? 0) + Number(p.allowances ?? 0) + Number(p.reimbursement ?? 0) + Number(p.benefits ?? 0);
 }
 
 function buildRoleStats(
   current: PayrollRow[],
-  previous: { net: number | null; employees: { position: string | null } | null }[]
+  previous: { net: number | null; employees: { id: string; position: string | null } | null }[]
 ) {
   const sumByRole = (records: { net: number | null; position: string | null }[]) => {
     const map = new Map<string, number>();
@@ -87,6 +119,24 @@ function buildRoleStats(
     .slice(0, 4);
 
   return roles;
+}
+
+function buildEarningsChangeMap(
+  previous: {
+    net: number | null;
+    basic: number | null;
+    allowances: number | null;
+    reimbursement: number | null;
+    benefits: number | null;
+    employee_id: string;
+  }[]
+): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const p of previous) {
+    const earn = Number(p.basic ?? 0) + Number(p.allowances ?? 0) + Number(p.reimbursement ?? 0) + Number(p.benefits ?? 0);
+    map.set(p.employee_id, earn);
+  }
+  return map;
 }
 
 const statusBadge = (status: string) => {
@@ -138,6 +188,7 @@ export default async function PayrollPage({
 
   const { payrolls, prevData } = await getPayroll(month, year, search);
   const roleStats = buildRoleStats(payrolls, prevData);
+  const earningsChangeMap = buildEarningsChangeMap(prevData);
 
   const years = [2023, 2024, 2025, 2026];
 
@@ -211,7 +262,17 @@ export default async function PayrollPage({
             Payslip
           </a>
         </nav>
-        {canManage && <div className="pb-2"><GeneratePayrollButton /></div>}
+        {canManage && (
+          <div className="pb-2 flex items-center gap-2">
+            <Link
+              href="/payroll/run"
+              className="inline-flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-500/30 rounded-md px-4 py-1.5 text-sm font-medium shadow-sm transition-all"
+            >
+              <PlayCircle className="w-4 h-4" /> Run Payroll
+            </Link>
+            <GeneratePayrollButton />
+          </div>
+        )}
       </div>
 
       {/* Role stat cards */}
@@ -265,50 +326,82 @@ export default async function PayrollPage({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    <th className="text-left px-5 py-3 font-semibold w-12">#</th>
-                    <th className="text-left px-5 py-3 font-semibold">Employee</th>
-                    <th className="text-left px-5 py-3 font-semibold">Role</th>
-                    <th className="text-left px-5 py-3 font-semibold">Salary</th>
-                    <th className="text-left px-5 py-3 font-semibold">Status</th>
-                    <th className="text-left px-5 py-3 font-semibold">Action</th>
+                  <tr className="text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/30">
+                    <th className="text-left px-4 py-3 font-semibold w-10">#</th>
+                    <th className="text-left px-4 py-3 font-semibold">Employee</th>
+                    <th className="text-right px-4 py-3 font-semibold">Earnings</th>
+                    <th className="text-right px-4 py-3 font-semibold">Tax</th>
+                    <th className="text-right px-4 py-3 font-semibold">Reimbursement</th>
+                    <th className="text-right px-4 py-3 font-semibold">Benefits</th>
+                    <th className="text-right px-4 py-3 font-semibold">Post-tax Ded.</th>
+                    <th className="text-right px-4 py-3 font-semibold">Net Pay</th>
+                    <th className="text-left px-4 py-3 font-semibold">Payment</th>
+                    <th className="text-left px-4 py-3 font-semibold">Status</th>
+                    <th className="text-left px-4 py-3 font-semibold">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {payrolls.map((p, i) => {
                     const initial = p.employees?.name?.charAt(0).toUpperCase() ?? "?";
                     const colorClass = avatarColors[i % avatarColors.length];
+                    const earnings = earningsFor(p);
+                    const prevEarn = p.employees?.id ? earningsChangeMap.get(p.employees.id) : undefined;
+                    const change = prevEarn && prevEarn > 0 ? ((earnings - prevEarn) / prevEarn) * 100 : null;
+                    const isUp = change != null && change >= 0;
                     return (
                       <tr
                         key={p.id}
-                        className={`${i % 2 === 0 ? "bg-white dark:bg-slate-900" : "bg-slate-50/50 dark:bg-slate-800/30"} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition`}
+                        className={`${i % 2 === 0 ? "bg-white dark:bg-slate-900" : "bg-slate-50/50 dark:bg-slate-800/30"} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-t border-slate-50 dark:border-slate-800`}
                       >
-                        <td className="px-5 py-3.5 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 tabular-nums">
                           {String(i + 1).padStart(2, "0")}
                         </td>
-                        <td className="px-5 py-3.5">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
+                            <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
                               {initial}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-cyan-600 dark:text-cyan-400 truncate">
+                              <p className="font-medium text-cyan-600 dark:text-cyan-400 truncate">
                                 {p.employees?.name ?? "Unknown"}
                               </p>
-                              <p className="text-xs text-slate-400 truncate">{p.employees?.email ?? "—"}</p>
+                              <p className="text-[11px] text-slate-400 truncate">{p.employees?.position ?? "—"}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300">
-                          {p.employees?.position ?? "—"}
+                        <td className="px-4 py-3 text-right tabular-nums">
+                          <p className="font-medium text-violet-600 dark:text-violet-400">{formatCurrency(earnings)}</p>
+                          {change != null ? (
+                            <p className={`text-[10px] ${isUp ? "text-emerald-500" : "text-red-500"} flex items-center gap-0.5 justify-end`}>
+                              {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                              change {isUp ? "+" : ""}{change.toFixed(0)}%
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-slate-400">—</p>
+                          )}
                         </td>
-                        <td className="px-5 py-3.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
+                          {formatCurrency(p.tax ?? 0)}
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
+                          {formatCurrency(p.reimbursement ?? 0)}
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
+                          {formatCurrency(p.benefits ?? 0)}
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-violet-600 dark:text-violet-400">
+                          {formatCurrency(p.post_tax_deductions ?? 0)}
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-slate-800 dark:text-slate-100">
                           {formatCurrency(p.net ?? 0)}
                         </td>
-                        <td className="px-5 py-3.5">{statusBadge(p.status)}</td>
-                        <td className="px-5 py-3.5">
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs whitespace-nowrap">
+                          {paymentMethodLabel(p.payment_method)}
+                        </td>
+                        <td className="px-4 py-3">{statusBadge(p.status)}</td>
+                        <td className="px-4 py-3">
                           <PayrollRowActions
                             id={p.id}
                             email={p.employees?.email ?? null}
@@ -325,12 +418,58 @@ export default async function PayrollPage({
         </div>
       )}
 
-      {/* Payslip tab placeholder */}
+      {/* Payslip tab — list with open links */}
       {activeTab === "payslip" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm py-16 text-center">
-          <DollarSign className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <h3 className="text-slate-700 dark:text-slate-200 font-semibold">Payslip view</h3>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Per-employee printable payslips coming soon.</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-violet-500" />
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Payslips</p>
+            <span className="ml-auto text-xs text-slate-400">{MONTHS[month - 1]} {year} · {payrolls.length} payslip{payrolls.length !== 1 ? "s" : ""}</span>
+          </div>
+          {payrolls.length === 0 ? (
+            <div className="py-16 text-center">
+              <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h3 className="text-slate-700 dark:text-slate-200 font-semibold">No payslips for {MONTHS[month - 1]} {year}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Generate payroll first to view payslips here.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-50 dark:divide-slate-800">
+              {payrolls.map((p, i) => {
+                const initial = p.employees?.name?.charAt(0).toUpperCase() ?? "?";
+                const colorClass = avatarColors[i % avatarColors.length];
+                return (
+                  <div key={p.id} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
+                        {initial}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                          {p.employees?.name ?? "Unknown"}
+                        </p>
+                        <p className="text-xs text-slate-400 truncate">
+                          {p.employees?.position ?? "—"} · {p.employees?.email ?? ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 mr-2">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">{formatCurrency(p.net ?? 0)}</p>
+                      <p className="text-xs text-slate-400">{statusBadge(p.status)}</p>
+                    </div>
+                    <a
+                      href={`/payroll/${p.id}/payslip`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20 border border-violet-200 dark:border-violet-500/20 transition shrink-0"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      View Payslip
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

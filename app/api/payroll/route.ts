@@ -34,8 +34,33 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { employeeId, month, year, basic, allowances, deductions } = body;
-  const net = Number(basic) + (Number(allowances) || 0) - (Number(deductions) || 0);
+  const {
+    employeeId, month, year,
+    basic, allowances, deductions,
+    tax, reimbursement, benefits, postTaxDeductions,
+    paymentMethod, payDay,
+  } = body;
+
+  const n = (v: unknown) => Number(v) || 0;
+  const net =
+    n(basic) + n(allowances) + n(reimbursement) + n(benefits)
+    - n(deductions) - n(tax) - n(postTaxDeductions);
+
+  // Check duplicate — same employee + month + year already exists
+  const { data: existing } = await supabase
+    .from("payroll")
+    .select("id")
+    .eq("employee_id", employeeId)
+    .eq("month", Number(month))
+    .eq("year", Number(year))
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json(
+      { error: "Payroll for this employee already exists for the selected month. Edit or delete the existing record." },
+      { status: 409 }
+    );
+  }
 
   const { data, error } = await supabase
     .from("payroll")
@@ -43,9 +68,15 @@ export async function POST(req: NextRequest) {
       employee_id: employeeId,
       month: Number(month),
       year: Number(year),
-      basic: Number(basic),
-      allowances: Number(allowances) || 0,
-      deductions: Number(deductions) || 0,
+      basic: n(basic),
+      allowances: n(allowances),
+      deductions: n(deductions),
+      tax: n(tax),
+      reimbursement: n(reimbursement),
+      benefits: n(benefits),
+      post_tax_deductions: n(postTaxDeductions),
+      payment_method: paymentMethod || "direct_deposit",
+      pay_day: payDay || null,
       net,
       status: "draft",
     })
