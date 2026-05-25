@@ -19,10 +19,25 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session || !["admin"].includes(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  }
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+
+  // Check permission: admin OR direct manager of leave's employee
+  const { data: leaveCheck } = await supabase
+    .from("leaves")
+    .select("employee_id, employees(reports_to)")
+    .eq("id", id)
+    .single();
+  if (!leaveCheck) return NextResponse.json({ error: "Leave not found" }, { status: 404 });
+
+  const isAdmin = session.role === "admin";
+  const empRel = (leaveCheck as unknown as { employees: { reports_to: string | null } | null }).employees;
+  const isDirectManager = !!session.employeeId && empRel?.reports_to === session.employeeId;
+
+  if (!isAdmin && !isDirectManager) {
+    return NextResponse.json({ error: "You don't have permission to approve this leave." }, { status: 403 });
+  }
+
   const { status, rejectedReason } = await req.json();
 
   const { data: leave, error: updateError } = await supabase

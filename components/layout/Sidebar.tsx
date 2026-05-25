@@ -77,6 +77,20 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
   useEffect(() => setMounted(true), []);
   const isDark = theme === "dark";
 
+  const [pendingLeaveCount, setPendingLeaveCount] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    const fetchCount = () => {
+      fetch("/api/leaves/pending-count")
+        .then((r) => r.json())
+        .then((d) => { if (alive) setPendingLeaveCount(d.count ?? 0); })
+        .catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 60000); // refresh every minute
+    return () => { alive = false; clearInterval(interval); };
+  }, []);
+
   return (
     <div className="flex h-screen shrink-0">
       {/* Icon rail (always visible) */}
@@ -189,7 +203,12 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
                             </span>
                           )}
                           <Icon className={cn("w-4 h-4 shrink-0", active ? "text-violet-600 dark:text-violet-400" : iconColor)} />
-                          <span className="truncate">{label}</span>
+                          <span className="truncate flex-1">{label}</span>
+                          {href === "/leaves" && pendingLeaveCount > 0 && (
+                            <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold shrink-0">
+                              {pendingLeaveCount}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}
