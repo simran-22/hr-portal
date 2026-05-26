@@ -64,25 +64,83 @@ export function ProfileHeroBanner({
 
   const initial = name.charAt(0).toUpperCase();
 
+  // Compact mode when no cover — clean header without banner
+  if (!coverUrl) {
+    return (
+      <div className="relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 flex items-center gap-4">
+        {/* Avatar */}
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden shrink-0 shadow-md">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+          ) : (
+            initial
+          )}
+        </div>
+
+        {/* Name + role */}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{name}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 capitalize">
+            {position ? `${position} · ` : ""}{role}
+          </p>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-lg px-3 py-1.5 transition disabled:opacity-50"
+            title="Add cover photo"
+          >
+            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">Add cover</span>
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleUpload}
+            className="hidden"
+          />
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 transition"
+            >
+              {menuOpen ? <X className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-10">
+                <Link href="/settings" className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition" onClick={() => setMenuOpen(false)}>
+                  <User className="w-4 h-4 text-violet-500" />
+                  View Profile
+                </Link>
+                <Link href="/settings" className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition border-t border-slate-100 dark:border-slate-800" onClick={() => setMenuOpen(false)}>
+                  <Settings className="w-4 h-4 text-violet-500" />
+                  Personal Preferences
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {error && (
+          <div className="absolute bottom-1 right-3 bg-red-500/90 text-white text-xs px-3 py-1.5 rounded-lg">
+            {error}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Full hero banner when cover is uploaded
   return (
     <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
-      {/* Cover area */}
-      <div
-        className={`h-32 sm:h-40 relative ${
-          coverUrl
-            ? "bg-slate-200 dark:bg-slate-800"
-            : "bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700"
-        }`}
-      >
-        {coverUrl && (
-          <>
-            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-          </>
-        )}
-        {!coverUrl && (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)]" />
-        )}
+      <div className="h-32 sm:h-40 relative bg-slate-200 dark:bg-slate-800">
+        <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
         {/* Cover controls (top-left) */}
         <div className="absolute top-3 left-3 flex items-center gap-2">
@@ -91,12 +149,12 @@ export function ProfileHeroBanner({
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
             className="inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs font-medium rounded-lg px-2.5 py-1.5 transition disabled:opacity-50"
-            title={coverUrl ? "Change cover" : "Add cover photo"}
+            title="Change cover"
           >
             {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{coverUrl ? "Change cover" : "Add cover"}</span>
+            <span className="hidden sm:inline">Change cover</span>
           </button>
-          {coverUrl && !uploading && (
+          {!uploading && (
             <button
               type="button"
               onClick={handleRemove}
@@ -125,19 +183,11 @@ export function ProfileHeroBanner({
           </button>
           {menuOpen && (
             <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-10">
-              <Link
-                href="/settings"
-                className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-                onClick={() => setMenuOpen(false)}
-              >
+              <Link href="/settings" className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition" onClick={() => setMenuOpen(false)}>
                 <User className="w-4 h-4 text-violet-500" />
                 View Profile
               </Link>
-              <Link
-                href="/settings"
-                className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition border-t border-slate-100 dark:border-slate-800"
-                onClick={() => setMenuOpen(false)}
-              >
+              <Link href="/settings" className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition border-t border-slate-100 dark:border-slate-800" onClick={() => setMenuOpen(false)}>
                 <Settings className="w-4 h-4 text-violet-500" />
                 Personal Preferences
               </Link>
@@ -152,7 +202,7 @@ export function ProfileHeroBanner({
         )}
       </div>
 
-      {/* Avatar + name section */}
+      {/* Avatar + name section overlapping cover */}
       <div className="px-6 pb-5 -mt-12 sm:-mt-14 flex flex-col sm:flex-row sm:items-end gap-4">
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white dark:bg-slate-900 p-1.5 shadow-lg shrink-0">
           <div className="w-full h-full rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
