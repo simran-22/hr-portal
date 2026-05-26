@@ -7,6 +7,11 @@ import { BirthdayWidget } from "@/components/shared/BirthdayWidget";
 import { NewHiresWidget } from "@/components/shared/NewHiresWidget";
 import { UpcomingHolidaysWidget } from "@/components/shared/UpcomingHolidaysWidget";
 import { PendingTasksWidget } from "@/components/shared/PendingTasksWidget";
+import { DashboardWidget } from "@/components/shared/DashboardWidget";
+import { CustomizeWidgetsButton } from "@/components/shared/CustomizeWidgetsButton";
+import { FavoritesWidget } from "@/components/shared/FavoritesWidget";
+import { QuickLinksWidget } from "@/components/shared/QuickLinksWidget";
+import { HomeTabs } from "@/components/shared/HomeTabs";
 
 async function getDashboardData() {
   const [
@@ -71,12 +76,17 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-          Good morning, {session?.name?.split(" ")[0]} 👋
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-0.5">Here&apos;s what&apos;s happening in your company today.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+            Good morning, {session?.name?.split(" ")[0]} 👋
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-0.5">Here&apos;s what&apos;s happening in your company today.</p>
+        </div>
+        <CustomizeWidgetsButton />
       </div>
+
+      <HomeTabs />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -95,26 +105,51 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts */}
-      <DashboardCharts deptChartData={d.deptChartData} />
+      <DashboardWidget widgetKey="charts">
+        <DashboardCharts deptChartData={d.deptChartData} />
+      </DashboardWidget>
 
       {/* Probation Tracker — HR only */}
-      {session?.role === "admin" && <ProbationWidget />}
+      {session?.role === "admin" && (
+        <DashboardWidget widgetKey="probation">
+          <ProbationWidget />
+        </DashboardWidget>
+      )}
 
       {/* My Pending Tasks + Upcoming Holidays */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <PendingTasksWidget />
-        <UpcomingHolidaysWidget />
+        <DashboardWidget widgetKey="pendingTasks">
+          <PendingTasksWidget />
+        </DashboardWidget>
+        <DashboardWidget widgetKey="upcomingHolidays">
+          <UpcomingHolidaysWidget />
+        </DashboardWidget>
+      </div>
+
+      {/* Favorites + Quick Links */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <DashboardWidget widgetKey="favorites">
+          <FavoritesWidget />
+        </DashboardWidget>
+        <DashboardWidget widgetKey="quickLinks">
+          <QuickLinksWidget />
+        </DashboardWidget>
       </div>
 
       {/* Birthdays + New Hires */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <BirthdayWidget />
-        <NewHiresWidget />
+        <DashboardWidget widgetKey="birthdays">
+          <BirthdayWidget />
+        </DashboardWidget>
+        <DashboardWidget widgetKey="newHires">
+          <NewHiresWidget />
+        </DashboardWidget>
       </div>
 
       {/* Recent + Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Recent Leaves */}
+        <DashboardWidget widgetKey="recentLeaves">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
             <h3 className="font-semibold text-slate-800 dark:text-slate-100">Recent Leave Requests</h3>
@@ -140,8 +175,10 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
+        </DashboardWidget>
 
         {/* Quick Stats */}
+        <DashboardWidget widgetKey="quickStats">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
             <h3 className="font-semibold text-slate-800 dark:text-slate-100">Quick Stats</h3>
@@ -165,10 +202,12 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
+        </DashboardWidget>
       </div>
 
       {/* Recent Announcements */}
       {d.recentAnnouncements.length > 0 && (
+        <DashboardWidget widgetKey="announcements">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
             <Megaphone className="w-4 h-4 text-violet-500" />
@@ -201,6 +240,7 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
+        </DashboardWidget>
       )}
     </div>
   );

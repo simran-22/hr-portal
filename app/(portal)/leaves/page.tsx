@@ -103,6 +103,15 @@ const statusBadge = (status: string) => {
   );
 };
 
+const TYPE_LABEL: Record<string, string> = {
+  annual: "Privilege",
+  sick: "Sick",
+  casual: "Casual",
+  unpaid: "Unpaid",
+  maternity: "Maternity",
+  paternity: "Paternity",
+};
+
 function formatDate(dateStr: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
     month: "short",
@@ -155,8 +164,8 @@ function LeaveTable({
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{leave.employees?.name}</p>
                 </div>
               </td>
-              <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300 capitalize">
-                {leave.type?.replace(/_/g, " ")}
+              <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">
+                {TYPE_LABEL[leave.type] ?? leave.type}
               </td>
               <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">{formatDate(leave.from_date)}</td>
               <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">{formatDate(leave.to_date)}</td>

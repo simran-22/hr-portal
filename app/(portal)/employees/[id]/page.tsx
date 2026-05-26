@@ -14,6 +14,7 @@ import {
   CalendarDays,
   DollarSign,
 } from "lucide-react";
+import { PinFavoriteButton } from "@/components/shared/PinFavoriteButton";
 
 interface Employee {
   id: string;
@@ -267,6 +268,7 @@ export default function EmployeeDetailPage({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {!editing && <PinFavoriteButton employeeId={employee.id} />}
           {!editing && isAdmin && (
             <>
               <button

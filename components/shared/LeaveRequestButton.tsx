@@ -81,7 +81,7 @@ export function LeaveRequestButton() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Leave Type</label>
                 <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className={inputClass}>
-                  <option value="annual">Annual Leave</option>
+                  <option value="annual">Privilege Leave</option>
                   <option value="sick">Sick Leave</option>
                   <option value="casual">Casual Leave</option>
                   <option value="unpaid">Unpaid Leave</option>
