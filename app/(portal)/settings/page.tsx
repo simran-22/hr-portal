@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { User, Shield, Building2, Mail, Phone, Calendar, Lock, ChevronRight } from "lucide-react";
 import { ProfileEditForm } from "@/components/shared/ProfileEditForm";
 import { ChangePasswordForm } from "@/components/shared/ChangePasswordForm";
+import { BackToOverviewLink } from "@/components/shared/BackToOverviewLink";
 
 async function getProfileData(userId: string) {
   const { data: profile } = await supabase
@@ -81,6 +82,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      <BackToOverviewLink />
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Settings</h2>

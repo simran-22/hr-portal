@@ -88,10 +88,10 @@ export default async function OverviewPage() {
             <nav className="flex items-center gap-1 px-2 py-2 overflow-x-auto">
               {[
                 { label: "Activities", href: "/overview", active: true },
-                { label: "Profile", href: "/settings", active: false },
-                { label: "Leave", href: "/leaves", active: false },
-                { label: "Attendance", href: "/attendance", active: false },
-                { label: "Approvals", href: "/leaves?status=pending", active: false },
+                { label: "Profile", href: "/settings?from=overview", active: false },
+                { label: "Leave", href: "/leaves?from=overview", active: false },
+                { label: "Attendance", href: "/attendance?from=overview", active: false },
+                { label: "Approvals", href: "/leaves?status=pending&from=overview", active: false },
               ].map((t) => (
                 <Link
                   key={t.label}

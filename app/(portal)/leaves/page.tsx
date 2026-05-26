@@ -4,6 +4,7 @@ import { updateLeaveStatus } from "@/lib/actions/leaves";
 import { CalendarDays, CheckCircle, XCircle, Clock, ListFilter, Users } from "lucide-react";
 import { LeaveRequestButton } from "@/components/shared/LeaveRequestButton";
 import { LeaveBalanceCard } from "@/components/shared/LeaveBalanceCard";
+import { BackToOverviewLink } from "@/components/shared/BackToOverviewLink";
 
 type LeaveRow = {
   id: string;
@@ -243,6 +244,7 @@ export default async function LeavesPage({
 
   return (
     <div className="space-y-6">
+      <BackToOverviewLink />
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>

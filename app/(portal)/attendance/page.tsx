@@ -3,6 +3,7 @@ import { UserCheck, UserX, CalendarOff, ClipboardList } from "lucide-react";
 import { AttendanceActions } from "@/components/shared/AttendanceActions";
 import { HoursSummary } from "@/components/shared/HoursSummary";
 import { getSession } from "@/lib/session";
+import { BackToOverviewLink } from "@/components/shared/BackToOverviewLink";
 
 async function getTodayAttendance() {
   const today = new Date().toISOString().split("T")[0];
@@ -99,6 +100,7 @@ export default async function AttendancePage() {
 
   return (
     <div className="space-y-6">
+      <BackToOverviewLink />
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>

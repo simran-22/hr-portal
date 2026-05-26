@@ -4,8 +4,19 @@ import { getSession } from "@/lib/session";
 
 export async function POST() {
   const session = await getSession();
-  if (!session || !session.employeeId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  let employeeId = session.employeeId ?? null;
+  if (!employeeId && session.email) {
+    const { data: emp } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("email", session.email)
+      .maybeSingle();
+    employeeId = emp?.id ?? null;
+  }
+  if (!employeeId) {
+    return NextResponse.json({ error: "Your user account isn't linked to an employee record." }, { status: 400 });
   }
 
   const today = new Date();
@@ -15,7 +26,7 @@ export async function POST() {
   const { data: record, error: fetchError } = await supabase
     .from("attendance")
     .select("*")
-    .eq("employee_id", session.employeeId)
+    .eq("employee_id", employeeId)
     .eq("date", todayStr)
     .maybeSingle();
 

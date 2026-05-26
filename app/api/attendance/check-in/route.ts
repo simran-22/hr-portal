@@ -4,8 +4,23 @@ import { getSession } from "@/lib/session";
 
 export async function POST() {
   const session = await getSession();
-  if (!session || !session.employeeId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Resolve employeeId — fall back to email lookup
+  let employeeId = session.employeeId ?? null;
+  if (!employeeId && session.email) {
+    const { data: emp } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("email", session.email)
+      .maybeSingle();
+    employeeId = emp?.id ?? null;
+  }
+  if (!employeeId) {
+    return NextResponse.json(
+      { error: "Your user account isn't linked to an employee record. Ask HR to add you to the employees list." },
+      { status: 400 }
+    );
   }
 
   const today = new Date();
@@ -15,7 +30,7 @@ export async function POST() {
   const { data: existing, error: fetchError } = await supabase
     .from("attendance")
     .select("*")
-    .eq("employee_id", session.employeeId)
+    .eq("employee_id", employeeId)
     .eq("date", todayStr)
     .maybeSingle();
 
@@ -41,7 +56,7 @@ export async function POST() {
     const { data, error } = await supabase
       .from("attendance")
       .insert({
-        employee_id: session.employeeId,
+        employee_id: employeeId,
         date: todayStr,
         check_in: now,
         status: "present",
