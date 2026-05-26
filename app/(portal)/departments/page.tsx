@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { AddDepartmentButton } from "@/components/shared/AddDepartmentButton";
-import { Building2, User, Users } from "lucide-react";
+import { Building2, Users } from "lucide-react";
 
 type Department = { id: string; name: string; description: string | null };
 
@@ -24,14 +24,6 @@ const DEPT_ACCENTS = [
   { bg: "bg-pink-50 dark:bg-pink-500/10",       icon: "text-pink-600 dark:text-pink-400",       dot: "bg-pink-500" },
   { bg: "bg-violet-50 dark:bg-violet-500/10",   icon: "text-violet-600 dark:text-violet-400",   dot: "bg-violet-500" },
   { bg: "bg-indigo-50 dark:bg-indigo-500/10",   icon: "text-indigo-600 dark:text-indigo-400",   dot: "bg-indigo-500" },
-];
-
-const LEVEL_THEMES = [
-  { box: "bg-slate-800", text: "text-white", icon: "text-slate-700" },
-  { box: "bg-emerald-500", text: "text-white", icon: "text-emerald-600" },
-  { box: "bg-blue-500", text: "text-white", icon: "text-blue-600" },
-  { box: "bg-orange-500", text: "text-white", icon: "text-orange-600" },
-  { box: "bg-violet-500", text: "text-white", icon: "text-violet-600" },
 ];
 
 async function getData() {
@@ -67,66 +59,61 @@ function buildDeptTree(deptEmployees: Employee[]): TreeNode[] {
   return roots;
 }
 
-function NodeBox({ node, depth }: { node: TreeNode; depth: number }) {
-  const theme = LEVEL_THEMES[Math.min(depth, LEVEL_THEMES.length - 1)];
-  return (
-    <a
-      href={`/employees/${node.id}`}
-      className="inline-flex shrink-0 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition w-[190px]"
-    >
-      <div className="bg-white dark:bg-slate-100 flex items-center justify-center w-12 shrink-0 border-r border-slate-200">
-        <User className={`w-6 h-6 ${theme.icon}`} />
-      </div>
-      <div className={`${theme.box} ${theme.text} flex-1 px-2.5 py-2 flex flex-col justify-center min-w-0`}>
-        <p className="text-[12px] font-bold uppercase tracking-wide truncate">{node.name}</p>
-        {node.position && (
-          <p className="text-[9px] uppercase tracking-wider opacity-80 truncate">
-            {node.position}
-          </p>
-        )}
-      </div>
-    </a>
-  );
-}
-
-function TreeBlock({ node, depth }: { node: TreeNode; depth: number }) {
-  return (
-    <div className="flex flex-col items-center">
-      <NodeBox node={node} depth={depth} />
-
-      {node.children.length > 0 && (
-        <>
-          <div className="flex flex-col items-center">
-            <div className="w-0.5 h-5 bg-slate-300 dark:bg-slate-600" />
-            <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-slate-300 dark:border-t-slate-600 -mt-1" />
-          </div>
-
-          {node.children.length === 1 ? (
-            <TreeBlock node={node.children[0]} depth={depth + 1} />
-          ) : (
-            <div className="relative pt-1">
-              <div className="flex items-start gap-4">
-                {node.children.map((child, i) => (
-                  <div key={child.id} className="relative flex flex-col items-center">
-                    <div className="w-0.5 h-5 bg-slate-300 dark:bg-slate-600" />
-                    <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-slate-300 dark:border-t-slate-600 -mt-1 mb-1.5" />
-                    <TreeBlock node={child} depth={depth + 1} />
-                    {i > 0 && (
-                      <div className="absolute top-0 -left-4 w-4 h-0.5 bg-slate-300 dark:bg-slate-600" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
+const AVATAR_COLORS = [
+  "bg-violet-500", "bg-emerald-500", "bg-blue-500",
+  "bg-orange-500", "bg-pink-500", "bg-indigo-500",
+];
 
 function getInitials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function TreeRow({ node, depth }: { node: TreeNode; depth: number }) {
+  const color = AVATAR_COLORS[depth % AVATAR_COLORS.length];
+  return (
+    <>
+      <a
+        href={`/employees/${node.id}`}
+        className="flex items-center gap-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group relative"
+        style={{ paddingLeft: depth * 20 + 8, paddingRight: 8 }}
+      >
+        {/* Tree connector lines for nested levels */}
+        {depth > 0 && (
+          <>
+            <span
+              className="absolute top-0 bottom-1/2 border-l-2 border-slate-200 dark:border-slate-700"
+              style={{ left: depth * 20 - 8 }}
+            />
+            <span
+              className="absolute top-1/2 w-2 border-t-2 border-slate-200 dark:border-slate-700"
+              style={{ left: depth * 20 - 8 }}
+            />
+          </>
+        )}
+        <div className={`w-8 h-8 rounded-full ${color} flex items-center justify-center text-white text-[11px] font-bold shrink-0`}>
+          {getInitials(node.name)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400">
+            {node.name}
+          </p>
+          {node.position && (
+            <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+              {node.position}
+            </p>
+          )}
+        </div>
+        {node.children.length > 0 && (
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded shrink-0">
+            {node.children.length}
+          </span>
+        )}
+      </a>
+      {node.children.map((child) => (
+        <TreeRow key={child.id} node={child} depth={depth + 1} />
+      ))}
+    </>
+  );
 }
 
 export default async function DepartmentsPage() {
@@ -168,7 +155,7 @@ export default async function DepartmentsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {departments.map((dept, i) => {
             const deptEmps = byDept.get(dept.id) ?? [];
             const tree = buildDeptTree(deptEmps);
@@ -200,8 +187,8 @@ export default async function DepartmentsPage() {
                   </span>
                 </div>
 
-                {/* Tree */}
-                <div className="p-6 overflow-x-auto">
+                {/* Tree — simple indented list */}
+                <div className="p-3 relative">
                   {deptEmps.length === 0 ? (
                     <p className="text-sm text-slate-400 text-center py-6">
                       No employees in this department
@@ -211,9 +198,9 @@ export default async function DepartmentsPage() {
                       Cyclic reporting structure — review reports_to settings.
                     </p>
                   ) : (
-                    <div className="flex flex-col items-center gap-6 min-w-fit">
+                    <div className="relative">
                       {tree.map((root) => (
-                        <TreeBlock key={root.id} node={root} depth={0} />
+                        <TreeRow key={root.id} node={root} depth={0} />
                       ))}
                     </div>
                   )}
@@ -264,16 +251,6 @@ export default async function DepartmentsPage() {
         </div>
       )}
 
-      {/* Color legend */}
-      <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mt-4">
-        <span className="font-medium">Reporting levels:</span>
-        {LEVEL_THEMES.map((t, i) => (
-          <span key={i} className="inline-flex items-center gap-1.5">
-            <span className={`w-3.5 h-3.5 rounded ${t.box}`} />
-            Level {i + 1}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
