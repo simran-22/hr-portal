@@ -3,6 +3,10 @@ import { getSession } from "@/lib/session";
 import { Users, CalendarOff, Briefcase, DollarSign, TrendingUp, UserCheck, Clock, Target, Megaphone } from "lucide-react";
 import { DashboardCharts } from "@/components/shared/DashboardCharts";
 import { ProbationWidget } from "@/components/shared/ProbationWidget";
+import { BirthdayWidget } from "@/components/shared/BirthdayWidget";
+import { NewHiresWidget } from "@/components/shared/NewHiresWidget";
+import { UpcomingHolidaysWidget } from "@/components/shared/UpcomingHolidaysWidget";
+import { PendingTasksWidget } from "@/components/shared/PendingTasksWidget";
 
 async function getDashboardData() {
   const [
@@ -95,6 +99,18 @@ export default async function DashboardPage() {
 
       {/* Probation Tracker — HR only */}
       {session?.role === "admin" && <ProbationWidget />}
+
+      {/* My Pending Tasks + Upcoming Holidays */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <PendingTasksWidget />
+        <UpcomingHolidaysWidget />
+      </div>
+
+      {/* Birthdays + New Hires */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <BirthdayWidget />
+        <NewHiresWidget />
+      </div>
 
       {/* Recent + Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
