@@ -104,47 +104,39 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Charts */}
-      <DashboardWidget widgetKey="charts">
-        <DashboardCharts deptChartData={d.deptChartData} />
-      </DashboardWidget>
-
-      {/* Probation Tracker — HR only */}
-      {session?.role === "admin" && (
-        <DashboardWidget widgetKey="probation">
-          <ProbationWidget />
-        </DashboardWidget>
-      )}
-
-      {/* My Pending Tasks + Upcoming Holidays */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <DashboardWidget widgetKey="pendingTasks">
-          <PendingTasksWidget />
-        </DashboardWidget>
-        <DashboardWidget widgetKey="upcomingHolidays">
-          <UpcomingHolidaysWidget />
-        </DashboardWidget>
-      </div>
-
-      {/* Favorites + Quick Links */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <DashboardWidget widgetKey="favorites">
-          <FavoritesWidget />
-        </DashboardWidget>
-        <DashboardWidget widgetKey="quickLinks">
-          <QuickLinksWidget />
-        </DashboardWidget>
-      </div>
-
-      {/* Birthdays + New Hires */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      {/* Zoho-style widget grid — 3 columns on desktop, flowing layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         <DashboardWidget widgetKey="birthdays">
           <BirthdayWidget />
         </DashboardWidget>
         <DashboardWidget widgetKey="newHires">
           <NewHiresWidget />
         </DashboardWidget>
+        <DashboardWidget widgetKey="favorites">
+          <FavoritesWidget />
+        </DashboardWidget>
+        <DashboardWidget widgetKey="quickLinks">
+          <QuickLinksWidget />
+        </DashboardWidget>
+        <DashboardWidget widgetKey="upcomingHolidays">
+          <UpcomingHolidaysWidget />
+        </DashboardWidget>
+        <DashboardWidget widgetKey="pendingTasks">
+          <PendingTasksWidget />
+        </DashboardWidget>
       </div>
+
+      {/* Probation Tracker — HR only, full width */}
+      {session?.role === "admin" && (
+        <DashboardWidget widgetKey="probation">
+          <ProbationWidget />
+        </DashboardWidget>
+      )}
+
+      {/* Charts (full width) */}
+      <DashboardWidget widgetKey="charts">
+        <DashboardCharts deptChartData={d.deptChartData} />
+      </DashboardWidget>
 
       {/* Recent + Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
