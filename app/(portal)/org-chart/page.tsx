@@ -163,7 +163,8 @@ export default async function OrgChartPage() {
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-8 overflow-x-auto">
-          <div className="flex flex-col items-center gap-12 min-w-fit">
+          {/* Roots are siblings — render side by side (equal partners appear in same row) */}
+          <div className="flex flex-row items-start justify-center gap-16 min-w-fit flex-wrap">
             {allRoots.map((root) => (
               <TreeBlock key={root.id} node={root} depth={0} />
             ))}
