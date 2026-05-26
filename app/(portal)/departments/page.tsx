@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { AddDepartmentButton } from "@/components/shared/AddDepartmentButton";
+import { DepartmentActions } from "@/components/shared/DepartmentActions";
 import { Building2, Users } from "lucide-react";
 
 type Department = { id: string; name: string; description: string | null };
@@ -185,6 +186,14 @@ export default async function DepartmentsPage() {
                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md shrink-0">
                     {deptEmps.length} {deptEmps.length === 1 ? "member" : "members"}
                   </span>
+                  {canManage && (
+                    <DepartmentActions
+                      id={dept.id}
+                      name={dept.name}
+                      description={dept.description}
+                      memberCount={deptEmps.length}
+                    />
+                  )}
                 </div>
 
                 {/* Tree — simple indented list */}
