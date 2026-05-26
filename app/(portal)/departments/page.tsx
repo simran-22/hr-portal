@@ -15,14 +15,15 @@ type Employee = {
 
 type TreeNode = Employee & { children: TreeNode[] };
 
-const DEPT_GRADIENTS = [
-  "from-slate-700 to-slate-900",
-  "from-emerald-500 to-teal-600",
-  "from-blue-500 to-cyan-600",
-  "from-orange-500 to-amber-600",
-  "from-pink-500 to-rose-600",
-  "from-violet-500 to-purple-600",
-  "from-indigo-500 to-blue-600",
+// Subtle accent colors for department icons (light tint + matching dot)
+const DEPT_ACCENTS = [
+  { bg: "bg-slate-100 dark:bg-slate-800",   icon: "text-slate-600 dark:text-slate-400",     dot: "bg-slate-500" },
+  { bg: "bg-emerald-50 dark:bg-emerald-500/10", icon: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
+  { bg: "bg-blue-50 dark:bg-blue-500/10",       icon: "text-blue-600 dark:text-blue-400",       dot: "bg-blue-500" },
+  { bg: "bg-orange-50 dark:bg-orange-500/10",   icon: "text-orange-600 dark:text-orange-400",   dot: "bg-orange-500" },
+  { bg: "bg-pink-50 dark:bg-pink-500/10",       icon: "text-pink-600 dark:text-pink-400",       dot: "bg-pink-500" },
+  { bg: "bg-violet-50 dark:bg-violet-500/10",   icon: "text-violet-600 dark:text-violet-400",   dot: "bg-violet-500" },
+  { bg: "bg-indigo-50 dark:bg-indigo-500/10",   icon: "text-indigo-600 dark:text-indigo-400",   dot: "bg-indigo-500" },
 ];
 
 const LEVEL_THEMES = [
@@ -171,29 +172,32 @@ export default async function DepartmentsPage() {
           {departments.map((dept, i) => {
             const deptEmps = byDept.get(dept.id) ?? [];
             const tree = buildDeptTree(deptEmps);
-            const gradient = DEPT_GRADIENTS[i % DEPT_GRADIENTS.length];
+            const accent = DEPT_ACCENTS[i % DEPT_ACCENTS.length];
 
             return (
               <div
                 key={dept.id}
                 className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden"
               >
-                {/* Department header */}
-                <div className={`bg-gradient-to-r ${gradient} px-5 py-4`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-bold truncate">{dept.name}</h3>
-                      <p className="text-white/80 text-xs truncate">
-                        {dept.description ?? `${deptEmps.length} member${deptEmps.length !== 1 ? "s" : ""}`}
-                      </p>
-                    </div>
-                    <span className="text-xs font-bold text-white bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-md shrink-0">
-                      {deptEmps.length}
-                    </span>
+                {/* Department header — clean, neutral */}
+                <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${accent.bg} flex items-center justify-center shrink-0`}>
+                    <Building2 className={`w-5 h-5 ${accent.icon}`} />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate flex items-center gap-2">
+                      <span className={`w-1.5 h-1.5 rounded-full ${accent.dot}`} />
+                      {dept.name}
+                    </h3>
+                    {dept.description && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {dept.description}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md shrink-0">
+                    {deptEmps.length} {deptEmps.length === 1 ? "member" : "members"}
+                  </span>
                 </div>
 
                 {/* Tree */}
@@ -221,19 +225,20 @@ export default async function DepartmentsPage() {
           {/* Unassigned employees */}
           {unassigned.length > 0 && (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-r from-slate-400 to-slate-500 px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-bold">Unassigned</h3>
-                    <p className="text-white/80 text-xs">No department set</p>
-                  </div>
-                  <span className="text-xs font-bold text-white bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-md shrink-0">
-                    {unassigned.length}
-                  </span>
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                 </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                    Unassigned
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">No department set</p>
+                </div>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md shrink-0">
+                  {unassigned.length} {unassigned.length === 1 ? "member" : "members"}
+                </span>
               </div>
               <div className="p-4 space-y-2">
                 {unassigned.map((e) => (
