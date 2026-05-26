@@ -19,6 +19,7 @@ export function CheckInCard() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [tick, setTick] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/attendance/today")
@@ -36,14 +37,19 @@ export function CheckInCard() {
   }, [record?.check_in, record?.check_out]);
 
   const handleAction = async (action: "check-in" | "check-out") => {
+    setError(null);
     setSubmitting(true);
     try {
       const res = await fetch(`/api/attendance/${action}`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        setRecord(data);
-        router.refresh();
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Action failed. Try again.");
+        return;
       }
+      setRecord(data);
+      router.refresh();
+    } catch {
+      setError("Network error. Try again.");
     } finally {
       setSubmitting(false);
     }
@@ -122,6 +128,13 @@ export function CheckInCard() {
         <p className="text-[11px] text-slate-400 mt-3 flex items-center justify-center gap-1.5">
           <Clock className="w-3 h-3" />
           Checked in at {new Date(record.check_in).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+        </p>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <p className="text-[11px] text-red-600 dark:text-red-400 mt-3 text-left bg-red-50 dark:bg-red-500/10 rounded-lg p-2 border border-red-100 dark:border-red-500/20">
+          {error}
         </p>
       )}
     </div>
