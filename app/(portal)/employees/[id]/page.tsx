@@ -536,17 +536,21 @@ export default function EmployeeDetailPage({
                 </p>
               </div>
             </div>
-            {manager && (
-              <div className="flex items-start gap-3">
-                <Briefcase className="w-4 h-4 mt-0.5 text-violet-500" />
-                <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Reports To</p>
+            <div className="flex items-start gap-3">
+              <Briefcase className="w-4 h-4 mt-0.5 text-violet-500" />
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Reports To</p>
+                {manager ? (
                   <a href={`/employees/${manager.id}`} className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:underline">
                     {manager.name}{manager.position ? ` · ${manager.position}` : ""}
                   </a>
-                </div>
+                ) : (
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 italic">
+                    No manager (top of hierarchy)
+                  </p>
+                )}
               </div>
-            )}
+            </div>
             {employee.status === "probation" && employee.probation_end_date && (
               <div className="flex items-start gap-3">
                 <CalendarDays className="w-4 h-4 mt-0.5 text-blue-500" />
