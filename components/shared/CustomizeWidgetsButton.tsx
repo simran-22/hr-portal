@@ -72,17 +72,30 @@ export function CustomizeWidgetsButton() {
                     <button
                       type="button"
                       onClick={() => toggle(key)}
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${
-                        enabled ? "bg-violet-600" : "bg-slate-200 dark:bg-slate-700"
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors border ${
+                        enabled
+                          ? "bg-violet-600 border-violet-700 shadow-inner"
+                          : "bg-slate-300 dark:bg-slate-600 border-slate-400 dark:border-slate-500"
                       }`}
                       aria-checked={enabled}
                       role="switch"
+                      title={enabled ? "Click to hide" : "Click to show"}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
-                          enabled ? "translate-x-4" : "translate-x-0.5"
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform mt-0.5 ${
+                          enabled ? "translate-x-6" : "translate-x-0.5"
                         }`}
                       />
+                      {/* On/Off label inside */}
+                      <span
+                        className={`absolute top-1/2 -translate-y-1/2 text-[8px] font-bold uppercase ${
+                          enabled
+                            ? "left-1.5 text-white"
+                            : "right-1.5 text-slate-600 dark:text-slate-300"
+                        }`}
+                      >
+                        {enabled ? "On" : "Off"}
+                      </span>
                     </button>
                   </div>
                 );

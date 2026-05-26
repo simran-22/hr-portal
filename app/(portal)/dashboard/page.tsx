@@ -10,7 +10,6 @@ import { PendingTasksWidget } from "@/components/shared/PendingTasksWidget";
 import { DashboardWidget } from "@/components/shared/DashboardWidget";
 import { CustomizeWidgetsButton } from "@/components/shared/CustomizeWidgetsButton";
 import { FavoritesWidget } from "@/components/shared/FavoritesWidget";
-import { QuickLinksWidget } from "@/components/shared/QuickLinksWidget";
 import { HomeTabs } from "@/components/shared/HomeTabs";
 
 async function getDashboardData() {
@@ -114,9 +113,6 @@ export default async function DashboardPage() {
         </DashboardWidget>
         <DashboardWidget widgetKey="favorites">
           <FavoritesWidget />
-        </DashboardWidget>
-        <DashboardWidget widgetKey="quickLinks">
-          <QuickLinksWidget />
         </DashboardWidget>
         <DashboardWidget widgetKey="upcomingHolidays">
           <UpcomingHolidaysWidget />

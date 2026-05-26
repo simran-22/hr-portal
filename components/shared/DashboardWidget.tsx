@@ -12,7 +12,6 @@ export type WidgetKey =
   | "birthdays"
   | "newHires"
   | "favorites"
-  | "quickLinks"
   | "recentLeaves"
   | "quickStats"
   | "announcements"
@@ -22,7 +21,6 @@ export const WIDGET_DEFINITIONS: { key: WidgetKey; label: string }[] = [
   { key: "probation", label: "Probation Tracker" },
   { key: "pendingTasks", label: "My Pending Tasks" },
   { key: "favorites", label: "Favorites" },
-  { key: "quickLinks", label: "Quick Links" },
   { key: "upcomingHolidays", label: "Upcoming Holidays" },
   { key: "birthdays", label: "Birthdays" },
   { key: "newHires", label: "New Hires" },
@@ -40,7 +38,6 @@ export function getWidgetVisibility(): Record<WidgetKey, boolean> {
     birthdays: true,
     newHires: true,
     favorites: true,
-    quickLinks: true,
     recentLeaves: true,
     quickStats: true,
     announcements: true,
