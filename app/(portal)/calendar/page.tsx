@@ -63,7 +63,7 @@ async function getCalendarData(year: number, month: number) {
   }
 
   // Leaves (for each leave, add to every day in range that falls in this month)
-  for (const l of (leaves ?? []) as { from_date: string; to_date: string; type: string; employees: { name: string } | null }[]) {
+  for (const l of (leaves ?? []) as unknown as { from_date: string; to_date: string; type: string; employees: { name: string } | null }[]) {
     const from = new Date(l.from_date.slice(0, 10) + "T00:00:00");
     const to = new Date(l.to_date.slice(0, 10) + "T00:00:00");
     const cursor = new Date(from);
