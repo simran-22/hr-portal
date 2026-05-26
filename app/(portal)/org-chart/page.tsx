@@ -1,29 +1,26 @@
 import { supabase } from "@/lib/supabase";
-import { GitBranch, Building2, Users } from "lucide-react";
+import { GitBranch, User, Users } from "lucide-react";
 
 type Emp = {
   id: string;
   name: string;
   position: string | null;
-  department_id: string | null;
   reports_to: string | null;
   departments: { name: string } | null;
 };
 
 type TreeNode = Emp & { children: TreeNode[] };
 
-async function getOrgData(): Promise<{ roots: TreeNode[]; total: number; orphans: TreeNode[] }> {
+async function getOrgData(): Promise<{ roots: TreeNode[]; orphans: TreeNode[]; total: number }> {
   const { data: employees } = await supabase
     .from("employees")
-    .select("id, name, position, department_id, reports_to, departments(name)")
+    .select("id, name, position, reports_to, departments(name)")
     .eq("status", "active")
     .order("name");
 
   const list = (employees ?? []) as unknown as Emp[];
   const map = new Map<string, TreeNode>();
-  for (const e of list) {
-    map.set(e.id, { ...e, children: [] });
-  }
+  for (const e of list) map.set(e.id, { ...e, children: [] });
 
   const roots: TreeNode[] = [];
   const orphans: TreeNode[] = [];
@@ -33,83 +30,85 @@ async function getOrgData(): Promise<{ roots: TreeNode[]; total: number; orphans
       roots.push(node);
     } else {
       const parent = map.get(e.reports_to);
-      if (parent) {
-        parent.children.push(node);
-      } else {
-        // Manager record missing or terminated — treat as orphan root
-        orphans.push(node);
-      }
+      if (parent) parent.children.push(node);
+      else orphans.push(node);
     }
   }
-
-  return { roots, total: list.length, orphans };
+  return { roots, orphans, total: list.length };
 }
 
-const GRADIENTS = [
-  "from-violet-500 to-purple-600",
-  "from-blue-500 to-cyan-600",
-  "from-emerald-500 to-teal-600",
-  "from-amber-400 to-orange-500",
-  "from-pink-500 to-rose-600",
-  "from-indigo-500 to-blue-600",
+// Depth-based color palette (matches the reference design)
+const LEVEL_THEMES = [
+  { box: "bg-slate-800", text: "text-white",  icon: "text-slate-700" },   // Level 0 (top)
+  { box: "bg-emerald-500", text: "text-white", icon: "text-emerald-600" }, // Level 1
+  { box: "bg-blue-500",   text: "text-white",  icon: "text-blue-600" },    // Level 2
+  { box: "bg-orange-500", text: "text-white",  icon: "text-orange-600" },  // Level 3
+  { box: "bg-violet-500", text: "text-white",  icon: "text-violet-600" },  // Level 4+
 ];
 
-function getInitials(name: string) {
-  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+function NodeBox({ node, depth }: { node: TreeNode; depth: number }) {
+  const theme = LEVEL_THEMES[Math.min(depth, LEVEL_THEMES.length - 1)];
+
+  return (
+    <a
+      href={`/employees/${node.id}`}
+      className="inline-flex shrink-0 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition w-[220px] sm:w-[260px]"
+    >
+      {/* Icon panel (white bg) */}
+      <div className="bg-white dark:bg-slate-100 flex items-center justify-center w-16 shrink-0 border-r border-slate-200">
+        <User className={`w-8 h-8 ${theme.icon}`} />
+      </div>
+      {/* Label panel */}
+      <div className={`${theme.box} ${theme.text} flex-1 px-3 py-3 flex flex-col justify-center min-w-0`}>
+        <p className="text-sm font-bold uppercase tracking-wider truncate">{node.name}</p>
+        {node.position && (
+          <p className="text-[10px] uppercase tracking-wider opacity-80 truncate mt-0.5">
+            {node.position}
+          </p>
+        )}
+      </div>
+    </a>
+  );
 }
 
-function NodeCard({ node, depth }: { node: TreeNode; depth: number }) {
-  const gradient = GRADIENTS[depth % GRADIENTS.length];
+function TreeBlock({ node, depth }: { node: TreeNode; depth: number }) {
   return (
     <div className="flex flex-col items-center">
-      {/* Card */}
-      <a
-        href={`/employees/${node.id}`}
-        className="inline-flex flex-col items-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow px-4 py-3 min-w-[180px] max-w-[200px]"
-      >
-        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-sm font-bold shadow-md mb-2`}>
-          {getInitials(node.name)}
-        </div>
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 text-center truncate w-full">
-          {node.name}
-        </p>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center truncate w-full">
-          {node.position ?? "—"}
-        </p>
-        {node.departments?.name && (
-          <span className="mt-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 truncate max-w-full">
-            {node.departments.name}
-          </span>
-        )}
-        {node.children.length > 0 && (
-          <span className="mt-1 text-[10px] text-violet-600 dark:text-violet-400 font-medium">
-            {node.children.length} report{node.children.length !== 1 ? "s" : ""}
-          </span>
-        )}
-      </a>
+      <NodeBox node={node} depth={depth} />
 
-      {/* Children */}
       {node.children.length > 0 && (
         <>
-          {/* Vertical connector */}
-          <div className="w-0.5 h-6 bg-slate-200 dark:bg-slate-700" />
-          {/* Horizontal connector spanning children */}
-          {node.children.length > 1 && (
-            <div className="relative w-full">
-              <div className="absolute top-0 left-[calc(50%/var(--count))] right-[calc(50%/var(--count))] h-0.5 bg-slate-200 dark:bg-slate-700"
-                style={{ ["--count" as string]: node.children.length } as React.CSSProperties}
-              />
-            </div>
-          )}
-          <div className="flex items-start gap-6 pt-4 mt-0.5">
-            {node.children.map((child) => (
-              <div key={child.id} className="flex flex-col items-center relative">
-                {/* Per-child top connector */}
-                <div className="absolute -top-4 w-0.5 h-4 bg-slate-200 dark:bg-slate-700" />
-                <NodeCard node={child} depth={depth + 1} />
-              </div>
-            ))}
+          {/* Vertical connector with arrow */}
+          <div className="flex flex-col items-center">
+            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
+            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-slate-300 dark:border-t-slate-600 -mt-1" />
           </div>
+
+          {/* Children container */}
+          {node.children.length === 1 ? (
+            <TreeBlock node={node.children[0]} depth={depth + 1} />
+          ) : (
+            <>
+              {/* Horizontal bus line connecting children */}
+              <div className="relative pt-2">
+                <div className="flex items-start gap-6">
+                  {node.children.map((child, i) => (
+                    <div key={child.id} className="relative flex flex-col items-center">
+                      {/* Each child gets its own down connector + arrow */}
+                      <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
+                      <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-slate-300 dark:border-t-slate-600 -mt-1 mb-2" />
+                      <TreeBlock node={child} depth={depth + 1} />
+
+                      {/* Horizontal lines connecting siblings (drawn between adjacent children) */}
+                      {i > 0 && (
+                        <div className="absolute top-0 -left-6 w-6 h-0.5 bg-slate-300 dark:bg-slate-600" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
@@ -117,7 +116,7 @@ function NodeCard({ node, depth }: { node: TreeNode; depth: number }) {
 }
 
 export default async function OrgChartPage() {
-  const { roots, total, orphans } = await getOrgData();
+  const { roots, orphans, total } = await getOrgData();
   const allRoots = [...roots, ...orphans];
 
   return (
@@ -136,44 +135,48 @@ export default async function OrgChartPage() {
               <GitBranch className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg">No employees yet</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Add employees and set their reporting line to see the chart.</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+              Add employees and set their reporting line to see the chart.
+            </p>
           </div>
         </div>
       ) : allRoots.length === 0 ? (
         <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-6 text-sm text-amber-800 dark:text-amber-400">
-          No top-level employees found. Every employee has someone they report to, which would create a cycle. Edit at least one employee and set <strong>Reports To</strong> to <em>— No manager —</em>.
+          No top-level employee found. Every employee has someone they report to, which creates a cycle.
+          Edit at least one employee and set <strong>Reports To</strong> to <em>— No manager —</em>.
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-8 overflow-x-auto">
-          {/* Company root */}
-          <div className="flex flex-col items-center">
-            <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl px-8 py-4 text-center shadow-lg">
-              <Building2 className="w-7 h-7 text-white mx-auto mb-1" />
-              <p className="text-white font-bold text-lg">HR Portal</p>
-              <p className="text-white/70 text-xs">{total} employees</p>
-            </div>
-
-            {allRoots.length > 0 && (
-              <>
-                <div className="w-0.5 h-8 bg-slate-200 dark:bg-slate-700" />
-                <div className="flex items-start gap-8 flex-wrap justify-center">
-                  {allRoots.map((node) => (
-                    <NodeCard key={node.id} node={node} depth={0} />
-                  ))}
-                </div>
-              </>
-            )}
+          <div className="flex flex-col items-center gap-12">
+            {allRoots.map((root) => (
+              <TreeBlock key={root.id} node={root} depth={0} />
+            ))}
           </div>
+        </div>
+      )}
 
-          {orphans.length > 0 && (
-            <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-              <Users className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                <p className="font-semibold text-slate-700 dark:text-slate-300">{orphans.length} orphan employee{orphans.length !== 1 ? "s" : ""}</p>
-                <p className="mt-0.5">Their manager record was removed or marked terminated. Update their <strong>Reports To</strong> to fix the hierarchy.</p>
-              </div>
-            </div>
-          )}
+      {/* Color legend */}
+      <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <span className="font-medium">Hierarchy levels:</span>
+        {LEVEL_THEMES.map((t, i) => (
+          <span key={i} className="inline-flex items-center gap-1.5">
+            <span className={`w-3.5 h-3.5 rounded ${t.box}`} />
+            Level {i + 1}
+          </span>
+        ))}
+      </div>
+
+      {orphans.length > 0 && (
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 flex items-start gap-3">
+          <Users className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="font-semibold text-slate-700 dark:text-slate-300">
+              {orphans.length} orphan employee{orphans.length !== 1 ? "s" : ""}
+            </p>
+            <p className="mt-0.5">
+              Their manager record was removed or marked terminated. Update their <strong>Reports To</strong> to fix the hierarchy.
+            </p>
+          </div>
         </div>
       )}
     </div>
