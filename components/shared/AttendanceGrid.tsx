@@ -359,13 +359,13 @@ export function AttendanceGrid({
                   <td className="sticky left-0 z-20 bg-white dark:bg-slate-900 px-2 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 text-slate-400 tabular-nums w-[48px] min-w-[48px] max-w-[48px]">
                     {i + 1}
                   </td>
-                  <td className="sticky left-[48px] z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 w-[140px] min-w-[140px] max-w-[140px]">
-                    <div className="truncate">{emp.manager_name ?? "—"}</div>
+                  <td className="sticky left-[48px] z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 w-[140px] min-w-[140px] max-w-[140px]">
+                    <div className="truncate text-[13px]">{emp.manager_name ?? "—"}</div>
                   </td>
                   <td className="sticky left-[188px] z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 w-[180px] min-w-[180px] max-w-[180px]">
                     <Link
                       href={`/employees/${emp.id}`}
-                      className="font-medium text-slate-700 dark:text-slate-200 hover:text-violet-600 dark:hover:text-violet-400 truncate block"
+                      className="text-[14px] font-semibold text-slate-800 dark:text-slate-100 hover:text-violet-600 dark:hover:text-violet-400 truncate block"
                     >
                       {emp.name}
                     </Link>
@@ -383,7 +383,7 @@ export function AttendanceGrid({
                         <button
                           type="button"
                           onClick={(e) => handleCellClick(e, emp.id, day)}
-                          className={`w-full h-full min-w-[58px] min-h-[40px] px-1 text-[12px] font-bold leading-tight whitespace-nowrap transition hover:ring-2 hover:ring-violet-400 hover:z-10 relative ${CELL_COLORS[code]} ${isSaving ? "opacity-50" : ""}`}
+                          className={`w-full h-full min-w-[58px] min-h-[40px] px-1 text-[10px] font-semibold leading-tight whitespace-nowrap transition hover:ring-2 hover:ring-violet-400 hover:z-10 relative ${CELL_COLORS[code]} ${isSaving ? "opacity-50" : ""}`}
                           title={`${emp.name} · ${dateKey(year, month1, day)} · ${code || "(empty)"}`}
                         >
                           {code || "·"}
