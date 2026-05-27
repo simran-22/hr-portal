@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { CalendarDays, Search } from "lucide-react";
 import Link from "next/link";
 import { LeaveTrackerExport } from "@/components/shared/LeaveTrackerExport";
+import { HRReportsTabs } from "@/components/shared/HRReportsTabs";
 
 const DEFAULTS = {
   privilege: 15,
@@ -133,21 +134,17 @@ export default async function LeaveTrackerPage({
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Leave Tracker</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">HR Reports</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
             Pro-rated leave balance for all employees · As of {asOf} · Year {year}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href="/leaves"
-            className="text-sm px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
-            ← Back to Leaves
-          </Link>
           <LeaveTrackerExport rows={rows} year={year} asOf={asOf} />
         </div>
       </div>
+
+      <HRReportsTabs />
 
       {/* Filters */}
       <form className="flex gap-2 flex-wrap" action="/leaves/tracker">

@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { AttendanceGrid } from "@/components/shared/AttendanceGrid";
-import Link from "next/link";
+import { HRReportsTabs } from "@/components/shared/HRReportsTabs";
 
 type Emp = {
   id: string;
@@ -113,20 +113,14 @@ export default async function AttendanceGridPage({
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-[1800px] mx-auto">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Attendance Grid</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Daily attendance matrix · click any cell to set status · changes save instantly
-          </p>
-        </div>
-        <Link
-          href="/attendance"
-          className="text-sm px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-        >
-          ← Back to Attendance
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">HR Reports</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          Daily attendance matrix · click any cell to set status · changes save instantly
+        </p>
       </div>
+
+      <HRReportsTabs />
 
       <AttendanceGrid
         year={year}
