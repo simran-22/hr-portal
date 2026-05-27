@@ -254,15 +254,15 @@ export function AttendanceGrid({
     dayHeaderCells.push(
       <th
         key={d}
-        className={`p-1 text-center font-semibold min-w-[36px] sticky top-0 z-10 border-b border-r border-slate-200 dark:border-slate-700 ${
+        className={`px-1 py-1.5 text-center font-semibold min-w-[58px] sticky top-0 z-10 border-b border-r border-slate-200 dark:border-slate-700 ${
           hol ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300" :
           wkend ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300" :
           "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
         }`}
         title={hol ?? (wkend ? "Weekend" : undefined)}
       >
-        <div className="text-[10px] uppercase tracking-wider">{wkLet}</div>
-        <div className="text-[11px] tabular-nums">{d}</div>
+        <div className="text-[11px] uppercase tracking-wider">{wkLet}</div>
+        <div className="text-[13px] font-bold tabular-nums">{d}</div>
       </th>
     );
   }
@@ -331,7 +331,7 @@ export function AttendanceGrid({
       )}
 
       {/* Grid */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-auto max-h-[calc(100vh-260px)]">
+      <div className="grid-scroll bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-auto max-h-[calc(100vh-240px)]">
         <table className="border-collapse text-[11px]">
           <thead>
             <tr>
@@ -383,7 +383,7 @@ export function AttendanceGrid({
                         <button
                           type="button"
                           onClick={(e) => handleCellClick(e, emp.id, day)}
-                          className={`w-full h-full min-w-[36px] min-h-[28px] text-[10px] font-semibold transition hover:ring-2 hover:ring-violet-400 hover:z-10 relative ${CELL_COLORS[code]} ${isSaving ? "opacity-50" : ""}`}
+                          className={`w-full h-full min-w-[58px] min-h-[40px] px-1 text-[12px] font-bold leading-tight whitespace-nowrap transition hover:ring-2 hover:ring-violet-400 hover:z-10 relative ${CELL_COLORS[code]} ${isSaving ? "opacity-50" : ""}`}
                           title={`${emp.name} · ${dateKey(year, month1, day)} · ${code || "(empty)"}`}
                         >
                           {code || "·"}
