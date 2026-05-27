@@ -38,6 +38,7 @@ const CATEGORIES: Category[] = [
       { label: "Departments",   href: "/departments",   icon: Building2 },
       { label: "Org Chart",     href: "/org-chart",     icon: GitBranch },
       { label: "Attendance",    href: "/attendance",    icon: CalendarCheck },
+      { label: "Attendance Grid", href: "/attendance/grid", icon: CalendarCheck, adminOnly: true },
       { label: "Leaves",        href: "/leaves",        icon: CalendarOff },
       { label: "Leave Tracker", href: "/leaves/tracker", icon: ClipboardList, adminOnly: true },
       { label: "Holidays",      href: "/holidays",      icon: CalendarDays },
