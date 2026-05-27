@@ -7,7 +7,7 @@ import {
   DollarSign, TrendingUp, Briefcase, Settings, LogOut,
   CalendarDays, PartyPopper, BarChart3, FolderOpen, GitBranch,
   UserPlus, UserMinus, Banknote, Gift, Megaphone, Cake, Landmark,
-  Sun, Moon, X, UsersRound, Wallet, Trophy, Cog,
+  Sun, Moon, X, UsersRound, Wallet, Trophy, Cog, ClipboardList,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { logout } from "@/lib/actions/auth";
@@ -39,6 +39,7 @@ const CATEGORIES: Category[] = [
       { label: "Org Chart",     href: "/org-chart",     icon: GitBranch },
       { label: "Attendance",    href: "/attendance",    icon: CalendarCheck },
       { label: "Leaves",        href: "/leaves",        icon: CalendarOff },
+      { label: "Leave Tracker", href: "/leaves/tracker", icon: ClipboardList, adminOnly: true },
       { label: "Holidays",      href: "/holidays",      icon: CalendarDays },
       { label: "Events",        href: "/events",        icon: PartyPopper },
       { label: "Anniversaries", href: "/anniversaries", icon: Cake, adminOnly: true },
