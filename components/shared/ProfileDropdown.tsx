@@ -133,9 +133,9 @@ export function ProfileDropdown({ userName, userRole }: { userName: string; user
         )}
       </button>
 
-      {/* Dropdown panel */}
+      {/* Dropdown panel — opens to the right of the sidebar avatar, bottom-aligned */}
       {open && (
-        <div className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden max-h-[calc(100vh-5rem)] flex flex-col">
+        <div className="fixed bottom-3 left-[96px] w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden max-h-[calc(100vh-1.5rem)] flex flex-col">
           {/* Header */}
           <div className="bg-gradient-to-r from-violet-500 to-purple-600 px-5 py-6 text-center relative">
             <button
