@@ -335,13 +335,13 @@ export function AttendanceGrid({
         <table className="border-collapse text-[11px]">
           <thead>
             <tr>
-              <th className="sticky left-0 top-0 z-30 bg-slate-100 dark:bg-slate-800 px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-300 border-r border-b border-slate-200 dark:border-slate-700 w-12">
+              <th className="sticky left-0 top-0 z-30 bg-slate-100 dark:bg-slate-800 px-2 py-2 text-left font-semibold text-slate-600 dark:text-slate-300 border-r border-b border-slate-200 dark:border-slate-700 w-[48px] min-w-[48px] max-w-[48px]">
                 #
               </th>
-              <th className="sticky left-12 top-0 z-30 bg-slate-100 dark:bg-slate-800 px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-300 border-r border-b border-slate-200 dark:border-slate-700 min-w-[120px]">
+              <th className="sticky left-[48px] top-0 z-30 bg-slate-100 dark:bg-slate-800 px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-300 border-r border-b border-slate-200 dark:border-slate-700 w-[140px] min-w-[140px] max-w-[140px]">
                 Manager
               </th>
-              <th className="sticky left-[180px] top-0 z-30 bg-slate-100 dark:bg-slate-800 px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-300 border-r border-b border-slate-200 dark:border-slate-700 min-w-[160px]">
+              <th className="sticky left-[188px] top-0 z-30 bg-slate-100 dark:bg-slate-800 px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-300 border-r border-b border-slate-200 dark:border-slate-700 w-[180px] min-w-[180px] max-w-[180px]">
                 Employee
               </th>
               {dayHeaderCells}
@@ -356,13 +356,13 @@ export function AttendanceGrid({
                   key={emp.id}
                   className={terminated ? "bg-red-50/40 dark:bg-red-500/5" : ""}
                 >
-                  <td className="sticky left-0 z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 text-slate-400 tabular-nums">
+                  <td className="sticky left-0 z-20 bg-white dark:bg-slate-900 px-2 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 text-slate-400 tabular-nums w-[48px] min-w-[48px] max-w-[48px]">
                     {i + 1}
                   </td>
-                  <td className="sticky left-12 z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 truncate max-w-[120px]">
-                    {emp.manager_name ?? "—"}
+                  <td className="sticky left-[48px] z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 w-[140px] min-w-[140px] max-w-[140px]">
+                    <div className="truncate">{emp.manager_name ?? "—"}</div>
                   </td>
-                  <td className="sticky left-[180px] z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 max-w-[160px]">
+                  <td className="sticky left-[188px] z-20 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-b border-slate-100 dark:border-slate-800 w-[180px] min-w-[180px] max-w-[180px]">
                     <Link
                       href={`/employees/${emp.id}`}
                       className="font-medium text-slate-700 dark:text-slate-200 hover:text-violet-600 dark:hover:text-violet-400 truncate block"
