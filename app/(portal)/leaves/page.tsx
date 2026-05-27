@@ -5,6 +5,7 @@ import { CalendarDays, CheckCircle, XCircle, Clock, ListFilter, Users } from "lu
 import { LeaveRequestButton } from "@/components/shared/LeaveRequestButton";
 import { LeaveBalanceCard } from "@/components/shared/LeaveBalanceCard";
 import { BackToOverviewLink } from "@/components/shared/BackToOverviewLink";
+import { LeaveDeleteButton } from "@/components/shared/LeaveDeleteButton";
 
 type LeaveRow = {
   id: string;
@@ -125,10 +126,12 @@ function LeaveTable({
   leaves,
   showActions,
   emptyText,
+  canDelete,
 }: {
   leaves: LeaveRow[];
   showActions: (l: LeaveRow) => boolean;
   emptyText: string;
+  canDelete: boolean;
 }) {
   if (leaves.length === 0) {
     return (
@@ -179,38 +182,46 @@ function LeaveTable({
               </td>
               <td className="px-5 py-4">{statusBadge(leave.status)}</td>
               <td className="px-5 py-4">
-                {leave.status === "pending" && showActions(leave) && (
-                  <div className="flex items-center gap-2">
-                    <form
-                      action={async () => {
-                        "use server";
-                        await updateLeaveStatus(leave.id, "approved");
-                      }}
-                    >
-                      <button
-                        type="submit"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                <div className="flex items-center gap-2 flex-wrap">
+                  {leave.status === "pending" && showActions(leave) && (
+                    <>
+                      <form
+                        action={async () => {
+                          "use server";
+                          await updateLeaveStatus(leave.id, "approved");
+                        }}
                       >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Approve
-                      </button>
-                    </form>
-                    <form
-                      action={async () => {
-                        "use server";
-                        await updateLeaveStatus(leave.id, "rejected");
-                      }}
-                    >
-                      <button
-                        type="submit"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          Approve
+                        </button>
+                      </form>
+                      <form
+                        action={async () => {
+                          "use server";
+                          await updateLeaveStatus(leave.id, "rejected");
+                        }}
                       >
-                        <XCircle className="w-3.5 h-3.5" />
-                        Reject
-                      </button>
-                    </form>
-                  </div>
-                )}
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          Reject
+                        </button>
+                      </form>
+                    </>
+                  )}
+                  {canDelete && (
+                    <LeaveDeleteButton
+                      id={leave.id}
+                      label={`${leave.employees?.name ?? ""} · ${formatDate(leave.from_date)}`}
+                    />
+                  )}
+                </div>
               </td>
             </tr>
           ))}
@@ -341,7 +352,7 @@ export default async function LeavesPage({
             <h3 className="font-semibold text-slate-800 dark:text-slate-100">Team Approvals</h3>
             <span className="ml-auto text-xs text-slate-400">{teamLeaves.length} request{teamLeaves.length !== 1 ? "s" : ""}</span>
           </div>
-          <LeaveTable leaves={teamLeaves} showActions={canActOn} emptyText="No requests from your team yet." />
+          <LeaveTable leaves={teamLeaves} showActions={canActOn} canDelete={isAdmin} emptyText="No requests from your team yet." />
         </div>
       )}
 
@@ -355,6 +366,7 @@ export default async function LeavesPage({
         <LeaveTable
           leaves={myLeaves}
           showActions={() => false}
+          canDelete={isAdmin}
           emptyText="You haven't requested any leave yet. Click Request Leave to start."
         />
       </div>
@@ -367,7 +379,7 @@ export default async function LeavesPage({
             <h3 className="font-semibold text-slate-800 dark:text-slate-100">Other Requests</h3>
             <span className="ml-auto text-xs text-slate-400">{otherLeaves.length} request{otherLeaves.length !== 1 ? "s" : ""}</span>
           </div>
-          <LeaveTable leaves={otherLeaves} showActions={canActOn} emptyText="No other requests." />
+          <LeaveTable leaves={otherLeaves} showActions={canActOn} canDelete={isAdmin} emptyText="No other requests." />
         </div>
       )}
     </div>
