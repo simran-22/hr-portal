@@ -34,8 +34,8 @@ const CATEGORIES: Category[] = [
     label: "HRMS",
     icon: UsersRound,
     items: [
-      { label: "Employees",     href: "/employees",     icon: Users },
       { label: "Departments",   href: "/departments",   icon: Building2 },
+      { label: "Employees",     href: "/employees",     icon: Users },
       { label: "Org Chart",     href: "/org-chart",     icon: GitBranch },
       { label: "Leaves",        href: "/leaves",        icon: CalendarOff },
       { label: "HR Reports",    href: "/attendance/grid", icon: ClipboardList, adminOnly: true },
