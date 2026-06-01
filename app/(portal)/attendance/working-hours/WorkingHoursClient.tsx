@@ -234,13 +234,23 @@ export function WorkingHoursClient({ initialRows, initialMonth, scope }: Props) 
                 <tr>
                   <td colSpan={8} className="text-center py-12 text-slate-400">
                     <Clock className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                    <p>
-                      {unconfigOnly
-                        ? "Everyone has a shift configured."
-                        : query
-                        ? "No employees match your filter."
-                        : "No employees found."}
-                    </p>
+                    {unconfigOnly ? (
+                      <p>Everyone has a shift configured.</p>
+                    ) : query ? (
+                      <p>No employees match your filter.</p>
+                    ) : scope !== "admin" ? (
+                      <div className="max-w-md mx-auto">
+                        <p className="font-medium text-slate-600 dark:text-slate-300">
+                          Your account isn&apos;t linked to an employee record yet.
+                        </p>
+                        <p className="text-xs mt-1.5 text-slate-400">
+                          Ask HR to create an employee with your sign-in email so your shift
+                          and hours appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      <p>No employees found.</p>
+                    )}
                   </td>
                 </tr>
               ) : (

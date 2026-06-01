@@ -187,13 +187,21 @@ export function MorningShiftClient({ initialRows, initialMonth, scope }: Props) 
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-slate-400">
                     <Sunrise className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                    <p>
-                      {scope !== "admin"
-                        ? "No incentive recorded for you this month."
-                        : query
-                        ? "No employees match your filter."
-                        : "No employees found."}
-                    </p>
+                    {scope !== "admin" ? (
+                      <div className="max-w-md mx-auto">
+                        <p className="font-medium text-slate-600 dark:text-slate-300">
+                          Your account isn&apos;t linked to an employee record yet.
+                        </p>
+                        <p className="text-xs mt-1.5 text-slate-400">
+                          Ask HR to create an employee with your sign-in email so your
+                          incentive appears here.
+                        </p>
+                      </div>
+                    ) : query ? (
+                      <p>No employees match your filter.</p>
+                    ) : (
+                      <p>No employees found.</p>
+                    )}
                   </td>
                 </tr>
               ) : (
