@@ -2,6 +2,15 @@ import "server-only";
 import { supabase } from "@/lib/supabase";
 import type { SessionPayload } from "@/lib/session";
 
+export type PendingProposal = {
+  id: string;
+  proposedRate: number;
+  proposedBy: string;
+  proposedByName: string | null;
+  proposedAt: string;
+  note: string | null;
+};
+
 export type IncentiveRow = {
   employeeId: string;
   name: string;
@@ -11,6 +20,7 @@ export type IncentiveRow = {
   rate: number;
   morningDays: number;
   amount: number;
+  pendingProposal: PendingProposal | null;
 };
 
 export type MonthSpec = { year: number; month: number };
@@ -43,6 +53,16 @@ type EmployeeRecord = {
   reports_to: string | null;
   status: string | null;
   departments: { name: string } | null;
+};
+
+type ProposalRecord = {
+  id: string;
+  employee_id: string;
+  proposed_rate: number | string;
+  proposed_by: string;
+  proposed_at: string;
+  note: string | null;
+  proposer: { name: string | null } | null;
 };
 
 async function fetchEmployees(filter: {
@@ -86,7 +106,35 @@ async function countMorningDays(
   return counts;
 }
 
-function toRow(emp: EmployeeRecord, days: number): IncentiveRow {
+async function fetchPendingProposals(
+  employeeIds: string[]
+): Promise<Map<string, PendingProposal>> {
+  const map = new Map<string, PendingProposal>();
+  if (employeeIds.length === 0) return map;
+  const { data, error } = await supabase
+    .from("morning_shift_rate_proposals")
+    .select("id, employee_id, proposed_rate, proposed_by, proposed_at, note, proposer:profiles!morning_shift_rate_proposals_proposed_by_fkey(name)")
+    .in("employee_id", employeeIds)
+    .eq("status", "pending");
+  if (error) throw new Error(error.message);
+  for (const row of (data ?? []) as unknown as ProposalRecord[]) {
+    map.set(row.employee_id, {
+      id: row.id,
+      proposedRate: Number(row.proposed_rate ?? 0) || 0,
+      proposedBy: row.proposed_by,
+      proposedByName: row.proposer?.name ?? null,
+      proposedAt: row.proposed_at,
+      note: row.note,
+    });
+  }
+  return map;
+}
+
+function toRow(
+  emp: EmployeeRecord,
+  days: number,
+  pending: PendingProposal | null
+): IncentiveRow {
   const rate = Number(emp.morning_shift_rate ?? 0) || 0;
   return {
     employeeId: emp.id,
@@ -97,6 +145,7 @@ function toRow(emp: EmployeeRecord, days: number): IncentiveRow {
     rate,
     morningDays: days,
     amount: Number((rate * days).toFixed(2)),
+    pendingProposal: pending,
   };
 }
 
@@ -117,10 +166,28 @@ export async function listIncentivesForSession(
   }
 
   const ids = employees.map((e) => e.id);
-  const counts = await countMorningDays(ids, spec);
-  return employees.map((e) => toRow(e, counts.get(e.id) ?? 0));
+  const [counts, proposals] = await Promise.all([
+    countMorningDays(ids, spec),
+    fetchPendingProposals(ids),
+  ]);
+  return employees.map((e) => toRow(e, counts.get(e.id) ?? 0, proposals.get(e.id) ?? null));
 }
 
 export async function canEditRate(session: SessionPayload): Promise<boolean> {
   return session.role === "admin";
+}
+
+/** Manager scope check: is targetEmployeeId a direct report of the session user? */
+export async function isDirectReportOfSession(
+  session: SessionPayload,
+  targetEmployeeId: string
+): Promise<boolean> {
+  if (!session.employeeId) return false;
+  const { data, error } = await supabase
+    .from("employees")
+    .select("reports_to")
+    .eq("id", targetEmployeeId)
+    .single();
+  if (error || !data) return false;
+  return data.reports_to === session.employeeId;
 }
