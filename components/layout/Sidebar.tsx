@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Building2, LayoutDashboard, Users, CalendarCheck, CalendarOff,
   DollarSign, TrendingUp, Briefcase, Settings, LogOut,
-  CalendarDays, PartyPopper, BarChart3, FolderOpen, GitBranch,
+  PartyPopper, BarChart3, FolderOpen, GitBranch,
   UserPlus, UserMinus, Banknote, Gift, Megaphone, Cake, Landmark,
   Sun, Moon, X, UsersRound, Wallet, Trophy, Cog, ClipboardList, Clock,
 } from "lucide-react";
@@ -41,7 +41,6 @@ const CATEGORIES: Category[] = [
       { label: "Leaves",        href: "/leaves",        icon: CalendarOff },
       { label: "HR Reports",    href: "/attendance/grid", icon: ClipboardList, adminOnly: true },
       { label: "Working Hours", href: "/attendance/working-hours", icon: Clock },
-      { label: "Holidays",      href: "/holidays",      icon: CalendarDays },
       { label: "Events",        href: "/events",        icon: PartyPopper },
       { label: "Anniversaries", href: "/anniversaries", icon: Cake, adminOnly: true },
       { label: "Onboarding",    href: "/onboarding",    icon: UserPlus },
