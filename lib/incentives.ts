@@ -177,6 +177,41 @@ export async function canEditRate(session: SessionPayload): Promise<boolean> {
   return session.role === "admin";
 }
 
+/**
+ * Compute a single employee's morning-shift incentive for a given month.
+ * Returns { rate, days, amount } with amount = current rate * past days that month.
+ *
+ * NOTE: this uses the *current* morning_shift_rate. If you need rate-at-time-of-payslip
+ * accuracy, snapshot the value onto the payroll row at generation time and read that
+ * snapshot here instead.
+ */
+export async function computeMonthlyIncentive(
+  employeeId: string,
+  spec: MonthSpec
+): Promise<{ rate: number; days: number; amount: number }> {
+  const { data: emp, error: empErr } = await supabase
+    .from("employees")
+    .select("morning_shift_rate")
+    .eq("id", employeeId)
+    .single();
+  if (empErr || !emp) return { rate: 0, days: 0, amount: 0 };
+
+  const rate = Number(emp.morning_shift_rate ?? 0) || 0;
+
+  const { start, endExclusive } = monthRange(spec);
+  const { data: rows, error: attErr } = await supabase
+    .from("attendance")
+    .select("id", { count: "exact", head: false })
+    .eq("employee_id", employeeId)
+    .eq("status", "morning_only")
+    .gte("date", start)
+    .lt("date", endExclusive);
+  if (attErr) return { rate, days: 0, amount: 0 };
+
+  const days = rows?.length ?? 0;
+  return { rate, days, amount: Number((rate * days).toFixed(2)) };
+}
+
 /** Manager scope check: is targetEmployeeId a direct report of the session user? */
 export async function isDirectReportOfSession(
   session: SessionPayload,

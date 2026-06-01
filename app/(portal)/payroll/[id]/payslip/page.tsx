@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PrintButton } from "@/components/shared/PrintButton";
+import { computeMonthlyIncentive } from "@/lib/incentives";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -124,6 +125,12 @@ export default async function PayslipPage({
   const preTaxDeductions = Number(payslip.deductions ?? 0);
   const postTaxDeductions = Number(payslip.post_tax_deductions ?? 0);
 
+  // Morning-shift incentive for this employee + month
+  const morningShift = await computeMonthlyIncentive(payslip.employees.id, {
+    year: payslip.year,
+    month: payslip.month,
+  });
+
   // PF (12% of employee basic_salary if applicable)
   const epf = payslip.employees.pf_applicable && payslip.employees.basic_salary
     ? Math.round(Number(payslip.employees.basic_salary) * 0.12 * 100) / 100
@@ -138,11 +145,12 @@ export default async function PayslipPage({
     conveyance: 0,                       // placeholder
     otherAllowance: allowancesTotal + reimbursement,
     variableAllowance: benefitsAmt,
+    morningShiftIncentive: morningShift.amount,
     specialBonus: 0,                     // placeholder
   };
   const grossEarnings =
     earnings.basic + earnings.hra + earnings.conveyance + earnings.otherAllowance +
-    earnings.variableAllowance + earnings.specialBonus;
+    earnings.variableAllowance + earnings.morningShiftIncentive + earnings.specialBonus;
 
   const otherDeductions = Math.max(0, preTaxDeductions + postTaxDeductions - epf);
   const deds = {
@@ -231,12 +239,20 @@ export default async function PayslipPage({
           </thead>
           <tbody>
             {[
-              { e: "BASIC",              eA: earnings.basic,             d: "ESI",                            dA: deds.esi },
-              { e: "HRA",                eA: earnings.hra,               d: "EPF",                            dA: deds.epf },
-              { e: "CONVEYANCE",         eA: earnings.conveyance,        d: "Deduction for Professional Tax", dA: deds.professionalTax },
-              { e: "OTHER ALLOWANCE",    eA: earnings.otherAllowance,    d: "TDS",                            dA: deds.tds },
-              { e: "VARIABLE ALLOWANCE", eA: earnings.variableAllowance, d: "Penal Deductions",               dA: deds.penal },
-              { e: "SPECIAL BONUS",      eA: earnings.specialBonus,      d: "Other Deductions",               dA: deds.other },
+              { e: "BASIC",                    eA: earnings.basic,                  d: "ESI",                            dA: deds.esi },
+              { e: "HRA",                      eA: earnings.hra,                    d: "EPF",                            dA: deds.epf },
+              { e: "CONVEYANCE",               eA: earnings.conveyance,             d: "Deduction for Professional Tax", dA: deds.professionalTax },
+              { e: "OTHER ALLOWANCE",          eA: earnings.otherAllowance,         d: "TDS",                            dA: deds.tds },
+              { e: "VARIABLE ALLOWANCE",       eA: earnings.variableAllowance,      d: "Penal Deductions",               dA: deds.penal },
+              {
+                e: morningShift.days > 0
+                  ? `MORNING SHIFT INCENTIVE (${morningShift.days} day${morningShift.days !== 1 ? "s" : ""} × ₹${morningShift.rate})`
+                  : "MORNING SHIFT INCENTIVE",
+                eA: earnings.morningShiftIncentive,
+                d:  "Other Deductions",
+                dA: deds.other,
+              },
+              { e: "SPECIAL BONUS",            eA: earnings.specialBonus,           d: "",                               dA: 0 },
             ].map((row, i) => (
               <tr key={i}>
                 <td className="border-r border-slate-900 px-3 py-1.5">{row.e}</td>
