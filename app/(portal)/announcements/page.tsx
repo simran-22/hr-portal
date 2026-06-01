@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { Megaphone, Trash2 } from "lucide-react";
 import { AddAnnouncementButton } from "@/components/shared/AddAnnouncementButton";
 import { DeleteAnnouncementButton } from "@/components/shared/DeleteAnnouncementButton";
+import { AnnouncementsTabs } from "@/components/shared/AnnouncementsTabs";
 
 async function getAnnouncements() {
   const { data } = await supabase
@@ -27,7 +28,7 @@ export default async function AnnouncementsPage() {
   const announcements = await getAnnouncements();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Announcements</h2>
@@ -35,6 +36,8 @@ export default async function AnnouncementsPage() {
         </div>
         {canManage && <AddAnnouncementButton />}
       </div>
+
+      <AnnouncementsTabs />
 
       {announcements.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center py-16 text-center">

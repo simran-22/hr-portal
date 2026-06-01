@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { AddEventButton } from "@/components/shared/AddEventButton";
 import { DeleteEventButton } from "@/components/shared/DeleteEventButton";
+import { AnnouncementsTabs } from "@/components/shared/AnnouncementsTabs";
 
 const typeColor: Record<string, string> = {
   Company:    "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400",
@@ -32,7 +33,7 @@ export default async function EventsPage() {
   const list = events ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Events</h2>
@@ -40,6 +41,8 @@ export default async function EventsPage() {
         </div>
         {isAdmin && <AddEventButton />}
       </div>
+
+      <AnnouncementsTabs />
 
       {list.length === 0 && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-12 text-center text-sm text-slate-400 dark:text-slate-500">
