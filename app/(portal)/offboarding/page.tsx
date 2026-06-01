@@ -28,8 +28,9 @@ const TYPE_STYLES: Record<string, string> = {
 export default async function OffboardingPage() {
   const session = await getSession();
   if (!session) redirect("/login");
+  if (session.role !== "admin") redirect("/dashboard");
 
-  const canManage = ["admin"].includes(session.role);
+  const canManage = true;
 
   if (!canManage) {
     return (
