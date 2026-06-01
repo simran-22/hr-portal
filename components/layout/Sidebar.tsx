@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
-  Building2, LayoutDashboard, Users, CalendarCheck, CalendarOff,
+  Building2, LayoutDashboard, Users, CalendarOff,
   DollarSign, TrendingUp, Briefcase, Settings, LogOut,
   PartyPopper, BarChart3, FolderOpen, GitBranch,
   UserPlus, UserMinus, Banknote, Gift, Megaphone, Cake, Landmark,
@@ -37,7 +37,6 @@ const CATEGORIES: Category[] = [
       { label: "Employees",     href: "/employees",     icon: Users },
       { label: "Departments",   href: "/departments",   icon: Building2 },
       { label: "Org Chart",     href: "/org-chart",     icon: GitBranch },
-      { label: "Attendance",    href: "/attendance",    icon: CalendarCheck },
       { label: "Leaves",        href: "/leaves",        icon: CalendarOff },
       { label: "HR Reports",    href: "/attendance/grid", icon: ClipboardList, adminOnly: true },
       { label: "Working Hours", href: "/attendance/working-hours", icon: Clock },
