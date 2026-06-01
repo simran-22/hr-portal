@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { AddIncentiveButton } from "@/components/shared/AddIncentiveButton";
 import { IncentiveActions } from "@/components/shared/IncentiveActions";
 import { Gift, Clock, CheckCircle, Banknote } from "lucide-react";
+import { IncentiveTabs } from "./IncentiveTabs";
 
 async function getIncentives(employeeId?: string) {
   let query = supabase
@@ -49,14 +50,16 @@ export default async function IncentivesPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Incentives</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-0.5">Manage employee incentives and bonuses</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-0.5">Variable pay and ad-hoc bonuses</p>
         </div>
         {canManage && <AddIncentiveButton />}
       </div>
+
+      <IncentiveTabs />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

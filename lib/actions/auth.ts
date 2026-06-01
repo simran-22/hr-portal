@@ -8,7 +8,7 @@ import { createSession, deleteSession } from "@/lib/session";
 const LoginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 const RegisterSchema = z.object({
   name: z.string().min(2), email: z.string().email(), password: z.string().min(6),
-  role: z.enum(["admin","employee"]).default("employee"),
+  role: z.enum(["admin","manager","employee"]).default("employee"),
 });
 
 export async function login(_: unknown, formData: FormData) {
