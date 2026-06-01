@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, ClipboardList } from "lucide-react";
+import { CalendarCheck, ClipboardList, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/attendance/grid", label: "Attendance Grid", icon: CalendarCheck },
   { href: "/leaves/tracker",   label: "Leave Tracker",   icon: ClipboardList },
+  { href: "/holidays",         label: "Holidays",        icon: CalendarDays },
 ];
 
 export function HRReportsTabs() {

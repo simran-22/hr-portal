@@ -4,6 +4,7 @@ import { getSession } from "@/lib/session";
 import { AddHolidayButton } from "@/components/shared/AddHolidayButton";
 import { DeleteHolidayButton } from "@/components/shared/DeleteHolidayButton";
 import { HolidayYearSelector } from "@/components/shared/HolidayYearSelector";
+import { HRReportsTabs } from "@/components/shared/HRReportsTabs";
 
 const typeColor: Record<string, string> = {
   National: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
@@ -30,17 +31,25 @@ export default async function HolidaysPage({
   const list = holidays ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Holidays</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-0.5">{list.length} holidays in {year}</p>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+            {isAdmin ? "HR Reports" : "Holidays"}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+            {isAdmin
+              ? `Holiday calendar · ${list.length} holidays in ${year}`
+              : `${list.length} holidays in ${year}`}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <HolidayYearSelector currentYear={year} />
           {isAdmin && <AddHolidayButton />}
         </div>
       </div>
+
+      {isAdmin && <HRReportsTabs />}
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <table className="w-full">
