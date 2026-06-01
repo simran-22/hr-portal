@@ -3,15 +3,21 @@ import { getSession } from "@/lib/session";
 import { Users, Plus, Eye } from "lucide-react";
 import { EmployeeFilters } from "@/components/shared/EmployeeFilters";
 
-async function getEmployees(search?: string, status?: string, department?: string) {
+async function getEmployees(opts: {
+  search?: string;
+  status?: string;
+  department?: string;
+  hideTerminated: boolean;
+}) {
   let query = supabase
     .from("employees")
     .select("id, name, email, position, status, hire_date, departments(name)")
     .order("name");
 
-  if (search) query = query.ilike("name", `%${search}%`);
-  if (status && status !== "all") query = query.eq("status", status);
-  if (department && department !== "all") query = query.eq("department_id", department);
+  if (opts.search) query = query.ilike("name", `%${opts.search}%`);
+  if (opts.status && opts.status !== "all") query = query.eq("status", opts.status);
+  else if (opts.hideTerminated) query = query.neq("status", "terminated");
+  if (opts.department && opts.department !== "all") query = query.eq("department_id", opts.department);
 
   const { data, error } = await query;
   return { employees: data ?? [], error };
@@ -57,8 +63,15 @@ export default async function EmployeesPage({
 }) {
   const sp = await searchParams;
   const session = await getSession();
-  const canManage = session && ["admin"].includes(session.role);
-  const { employees } = await getEmployees(sp.search, sp.status, sp.department);
+  const canManage = !!(session && ["admin"].includes(session.role));
+  // Non-admin viewers never see terminated colleagues, even if they tamper with the URL.
+  const safeStatus = !canManage && sp.status === "terminated" ? undefined : sp.status;
+  const { employees } = await getEmployees({
+    search: sp.search,
+    status: safeStatus,
+    department: sp.department,
+    hideTerminated: !canManage,
+  });
   const departments = await getDepartments();
 
   const statusCounts = {
@@ -68,6 +81,9 @@ export default async function EmployeesPage({
     terminated: employees.filter((e: any) => e.status === "terminated").length,
     probation: employees.filter((e: any) => e.status === "probation").length,
   };
+  const STATUS_TABS = canManage
+    ? (["all", "active", "on_leave", "terminated", "probation"] as const)
+    : (["all", "active", "on_leave", "probation"] as const);
 
   return (
     <div className="space-y-6">
@@ -92,7 +108,7 @@ export default async function EmployeesPage({
 
       {/* Status Pills */}
       <div className="flex items-center gap-2 flex-wrap">
-        {(["all", "active", "on_leave", "terminated", "probation"] as const).map((s) => {
+        {STATUS_TABS.map((s) => {
           const isActive = (sp.status ?? "all") === s;
           const colors: Record<string, string> = {
             all: "from-slate-500 to-slate-600",
