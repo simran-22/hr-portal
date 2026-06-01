@@ -166,7 +166,10 @@ function NodeCard({
   );
 }
 
-const GRID_THRESHOLD = 5;
+const GRID_THRESHOLD = 8;
+const COMPACT_CARD_PX = 180;
+const GRID_GAP_PX = 16;
+const MAX_GRID_COLS = 4;
 
 function Subtree({
   node,
@@ -205,24 +208,39 @@ function Subtree({
           <div className="w-px h-6 bg-slate-300 dark:bg-slate-600" />
 
           {useGrid ? (
-            <div className="relative rounded-2xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-5 pt-7 pb-5">
-              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                {visibleChildren.length} direct report{visibleChildren.length !== 1 ? "s" : ""}
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {visibleChildren.map((child) => (
-                  <div key={child.id} className="flex justify-center">
-                    <Subtree
-                      node={child}
-                      query={query}
-                      collapsed={collapsed}
-                      toggle={toggle}
-                      compact
-                    />
+            (() => {
+              const cols = Math.min(visibleChildren.length, MAX_GRID_COLS);
+              return (
+                <div
+                  className="relative rounded-2xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 px-5 pt-7 pb-5"
+                  style={{
+                    minWidth: cols * COMPACT_CARD_PX + (cols - 1) * GRID_GAP_PX + 40,
+                  }}
+                >
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                    {visibleChildren.length} direct report{visibleChildren.length !== 1 ? "s" : ""}
+                  </span>
+                  <div
+                    className="grid gap-4 justify-center"
+                    style={{
+                      gridTemplateColumns: `repeat(${cols}, minmax(${COMPACT_CARD_PX}px, max-content))`,
+                    }}
+                  >
+                    {visibleChildren.map((child) => (
+                      <div key={child.id} className="flex justify-center">
+                        <Subtree
+                          node={child}
+                          query={query}
+                          collapsed={collapsed}
+                          toggle={toggle}
+                          compact
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              );
+            })()
           ) : visibleChildren.length === 1 ? (
             <Subtree
               node={visibleChildren[0]}
