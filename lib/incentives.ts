@@ -157,10 +157,8 @@ export async function listIncentivesForSession(
 
   if (session.role === "admin") {
     employees = await fetchEmployees({});
-  } else if (session.role === "manager") {
-    if (!session.employeeId) return [];
-    employees = await fetchEmployees({ managerId: session.employeeId });
   } else {
+    // Manager and Employee both scope to self only.
     if (!session.employeeId) return [];
     employees = await fetchEmployees({ onlyId: session.employeeId });
   }

@@ -112,11 +112,7 @@ export function WorkingHoursClient({ initialRows, initialMonth, scope }: Props) 
   };
 
   const scopeLabel =
-    scope === "admin"
-      ? "Showing all active employees"
-      : scope === "manager"
-      ? "Showing your direct reports"
-      : "Showing your hours";
+    scope === "admin" ? "Showing all active employees" : "Showing your hours";
 
   return (
     <div className="space-y-5">

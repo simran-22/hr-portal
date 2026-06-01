@@ -46,8 +46,7 @@ export function MorningShiftClient({ initialRows, initialMonth, scope }: Props) 
   const [draftRate, setDraftRate] = useState("");
 
   const isAdmin = scope === "admin";
-  const isManager = scope === "manager";
-  const canEditRates = isAdmin || isManager;
+  const canEditRates = isAdmin;
 
   const months = useMemo(monthOptions, []);
 
@@ -125,8 +124,6 @@ export function MorningShiftClient({ initialRows, initialMonth, scope }: Props) 
 
   const scopeLabel = isAdmin
     ? "Showing all active employees"
-    : isManager
-    ? "Showing your direct reports — click any rate to set it"
     : "Showing your incentive";
 
   return (
@@ -191,9 +188,7 @@ export function MorningShiftClient({ initialRows, initialMonth, scope }: Props) 
                   <td colSpan={5} className="text-center py-12 text-slate-400">
                     <Sunrise className="w-10 h-10 mx-auto mb-2 opacity-40" />
                     <p>
-                      {isManager
-                        ? "No direct reports found. Ask HR to set 'Reports To' on your team."
-                        : scope === "employee"
+                      {scope !== "admin"
                         ? "No incentive recorded for you this month."
                         : query
                         ? "No employees match your filter."

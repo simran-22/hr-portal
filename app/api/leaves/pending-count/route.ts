@@ -6,9 +6,16 @@ export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ count: 0 });
 
-  const isAdmin = session.role === "admin";
+  // HR sees all pending leaves (the sidebar badge).
+  if (session.role === "admin") {
+    const { count } = await supabase
+      .from("leaves")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending");
+    return NextResponse.json({ count: count ?? 0 });
+  }
 
-  // Resolve employeeId — fall back to email lookup
+  // Manager and Employee see only their own pending count.
   let myEmployeeId = session.employeeId ?? null;
   if (!myEmployeeId && session.email) {
     const { data: emp } = await supabase
@@ -18,32 +25,13 @@ export async function GET() {
       .maybeSingle();
     myEmployeeId = emp?.id ?? null;
   }
-
-  // Admin sees all pending
-  if (isAdmin) {
-    const { count } = await supabase
-      .from("leaves")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "pending");
-    return NextResponse.json({ count: count ?? 0 });
-  }
-
-  // Manager sees pending from direct reports
   if (!myEmployeeId) return NextResponse.json({ count: 0 });
-
-  const { data: reports } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("reports_to", myEmployeeId);
-  const ids = (reports ?? []).map((r) => r.id);
-
-  if (ids.length === 0) return NextResponse.json({ count: 0 });
 
   const { count } = await supabase
     .from("leaves")
     .select("*", { count: "exact", head: true })
     .eq("status", "pending")
-    .in("employee_id", ids);
+    .eq("employee_id", myEmployeeId);
 
   return NextResponse.json({ count: count ?? 0 });
 }

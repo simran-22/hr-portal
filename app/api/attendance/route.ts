@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
     .lte("date", endDate)
     .order("date", { ascending: false });
 
-  if (session.role === "employee" && session.employeeId) {
+  // Non-admin (employee or manager) sees only own attendance.
+  if (session.role !== "admin" && session.employeeId) {
     query = query.eq("employee_id", session.employeeId);
   }
 

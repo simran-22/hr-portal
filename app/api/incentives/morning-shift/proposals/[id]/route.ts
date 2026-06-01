@@ -71,25 +71,22 @@ export async function PATCH(
   return NextResponse.json({ id, status: nextStatus, reviewedAt });
 }
 
-// DELETE: proposer withdraws their own pending proposal, or admin clears any.
+// DELETE: HR-only. (Dormant — proposal flow was deprecated in favor of HR direct edit.)
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { id } = await params;
   const proposal = await loadProposal(id);
   if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
   if (proposal.status !== "pending") {
     return NextResponse.json({ error: "Only pending proposals can be withdrawn" }, { status: 409 });
-  }
-
-  const isAdmin = session.role === "admin";
-  const isProposer = proposal.proposed_by === session.id;
-  if (!isAdmin && !isProposer) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { error } = await supabase

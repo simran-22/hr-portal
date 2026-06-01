@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
   if (status !== "all") {
     query = query.eq("status", status);
   }
-  if (session.role === "employee" && session.employeeId) {
+  // Non-admin (employee or manager) sees only own leaves.
+  if (session.role !== "admin" && session.employeeId) {
     query = query.eq("employee_id", session.employeeId);
   }
 

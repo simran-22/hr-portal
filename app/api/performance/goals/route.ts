@@ -11,7 +11,8 @@ export async function GET() {
     .select("*, employees(id, name)")
     .order("created_at", { ascending: false });
 
-  if (session.role === "employee" && session.employeeId) {
+  // Non-admin (employee or manager) sees only own goals.
+  if (session.role !== "admin" && session.employeeId) {
     query = query.eq("employee_id", session.employeeId);
   }
 

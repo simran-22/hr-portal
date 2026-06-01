@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
-import { isDirectReportOfSession } from "@/lib/incentives";
 
+// Dormant endpoint — the proposal flow was deprecated in favor of HR-only direct edit.
+// Kept admin-locked so the table is still writable by HR if the flow is ever revived.
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (session.role !== "manager" && session.role !== "admin") {
-    return NextResponse.json({ error: "Only managers can propose rates" }, { status: 403 });
+  if (session.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json().catch(() => ({}));
@@ -21,16 +22,6 @@ export async function POST(req: NextRequest) {
   const rate = Number(proposedRate);
   if (!Number.isFinite(rate) || rate < 0) {
     return NextResponse.json({ error: "proposedRate must be a non-negative number" }, { status: 400 });
-  }
-
-  if (session.role === "manager") {
-    const allowed = await isDirectReportOfSession(session, employeeId);
-    if (!allowed) {
-      return NextResponse.json(
-        { error: "You can only propose rates for your direct reports" },
-        { status: 403 }
-      );
-    }
   }
 
   await supabase
