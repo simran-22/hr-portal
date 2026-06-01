@@ -53,6 +53,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
     updates.reports_to = body.reportsTo || null;
   }
+  if (body.shiftStart !== undefined) updates.shift_start = body.shiftStart || null;
+  if (body.shiftEnd !== undefined) updates.shift_end = body.shiftEnd || null;
+  if (body.shiftBreakMinutes !== undefined) {
+    updates.shift_break_minutes = body.shiftBreakMinutes === "" ? 0 : Number(body.shiftBreakMinutes) || 0;
+  }
 
   const { data, error } = await supabase
     .from("employees")

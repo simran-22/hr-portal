@@ -38,7 +38,14 @@ export default function AddEmployeePage() {
     pfNumber: "",
     pfApplicable: true,
     reportsTo: "",
+    shiftStart: "",
+    shiftEnd: "",
+    shiftBreakMinutes: "0",
   });
+
+  const applyShiftPreset = (start: string, end: string, breakMins: string) => {
+    setForm((prev) => ({ ...prev, shiftStart: start, shiftEnd: end, shiftBreakMinutes: breakMins }));
+  };
 
   const setBasicFromSalary = (percent: number) => {
     const s = Number(form.salary);
@@ -301,6 +308,80 @@ export default function AddEmployeePage() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Shift Timing section */}
+          <div className="pt-5 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Shift Timing</h3>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => applyShiftPreset("09:00", "18:00", "60")}
+                  className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20"
+                >
+                  General 9–18
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyShiftPreset("06:00", "15:00", "30")}
+                  className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20"
+                >
+                  Morning 6–15
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyShiftPreset("14:00", "23:00", "30")}
+                  className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20"
+                >
+                  Evening 14–23
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyShiftPreset("22:00", "07:00", "30")}
+                  className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20"
+                >
+                  Night 22–07
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div>
+                <label className={labelClass}>Shift Start</label>
+                <input
+                  name="shiftStart"
+                  type="time"
+                  value={form.shiftStart}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Shift End</label>
+                <input
+                  name="shiftEnd"
+                  type="time"
+                  value={form.shiftEnd}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Paid break (min)</label>
+                <input
+                  name="shiftBreakMinutes"
+                  type="number"
+                  min="0"
+                  value={form.shiftBreakMinutes}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 mt-1.5">
+              Used by the Working Hours report to compute expected vs actual hours, late, overtime. Leave blank
+              to exclude from the report. For night shifts where end {"<"} start, the system treats it as crossing midnight.
+            </p>
           </div>
 
           {/* PF Details section */}

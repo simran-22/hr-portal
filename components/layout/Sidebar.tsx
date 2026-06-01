@@ -7,7 +7,7 @@ import {
   DollarSign, TrendingUp, Briefcase, Settings, LogOut,
   CalendarDays, PartyPopper, BarChart3, FolderOpen, GitBranch,
   UserPlus, UserMinus, Banknote, Gift, Megaphone, Cake, Landmark,
-  Sun, Moon, X, UsersRound, Wallet, Trophy, Cog, ClipboardList,
+  Sun, Moon, X, UsersRound, Wallet, Trophy, Cog, ClipboardList, Clock,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { logout } from "@/lib/actions/auth";
@@ -40,6 +40,7 @@ const CATEGORIES: Category[] = [
       { label: "Attendance",    href: "/attendance",    icon: CalendarCheck },
       { label: "Leaves",        href: "/leaves",        icon: CalendarOff },
       { label: "HR Reports",    href: "/attendance/grid", icon: ClipboardList, adminOnly: true },
+      { label: "Working Hours", href: "/attendance/working-hours", icon: Clock },
       { label: "Holidays",      href: "/holidays",      icon: CalendarDays },
       { label: "Events",        href: "/events",        icon: PartyPopper },
       { label: "Anniversaries", href: "/anniversaries", icon: Cake, adminOnly: true },

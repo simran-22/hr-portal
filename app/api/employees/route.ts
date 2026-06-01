@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, email, phone, position, departmentId, salary, status, hireDate, dateOfBirth, probationEndDate, basicSalary, uan, pfNumber, pfApplicable, reportsTo } = body;
+  const { name, email, phone, position, departmentId, salary, status, hireDate, dateOfBirth, probationEndDate, basicSalary, uan, pfNumber, pfApplicable, reportsTo, shiftStart, shiftEnd, shiftBreakMinutes } = body;
 
   const { data, error } = await supabase
     .from("employees")
@@ -58,6 +58,9 @@ export async function POST(req: NextRequest) {
       pf_number: pfNumber || null,
       pf_applicable: pfApplicable ?? true,
       reports_to: reportsTo || null,
+      shift_start: shiftStart || null,
+      shift_end: shiftEnd || null,
+      shift_break_minutes: shiftBreakMinutes ? Number(shiftBreakMinutes) : 0,
     })
     .select("*, departments(id, name)")
     .single();
