@@ -140,19 +140,8 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
   return (
     <>
       <aside className="w-[88px] h-screen flex flex-col bg-slate-900 dark:bg-slate-950 border-r border-slate-800 shrink-0 z-30 relative">
-        {/* Logo */}
-        <div className="px-3 pt-4 pb-3 flex justify-center">
-          <Link
-            href="/dashboard"
-            onClick={() => setOpenCategory(null)}
-            className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md hover:scale-105 transition"
-          >
-            <Building2 className="w-5 h-5 text-white" />
-          </Link>
-        </div>
-
         {/* Home (always direct) */}
-        <div className="px-2">
+        <div className="px-2 pt-3">
           <RailItem
             label="Home"
             icon={LayoutDashboard}
